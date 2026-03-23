@@ -1,0 +1,82 @@
+import React from "react";
+import { motion } from "framer-motion";
+import { Pill, Wine, Wheat, Cpu, Package } from "lucide-react";
+
+const sectors = [
+  {
+    icon: Pill,
+    name: "Pharmaceuticals",
+    desc: "Anchor sector — traceability aligns with NAFDAC's regulatory direction for end-to-end supply chain visibility.",
+    tag: "Primary",
+  },
+  {
+    icon: Package,
+    name: "Premium FMCG",
+    desc: "Anti-counterfeit control for premium consumer goods where brand trust is commercially critical.",
+    tag: "High Value",
+  },
+  {
+    icon: Wine,
+    name: "Alcohol & Beverages",
+    desc: "Channel assurance for spirits and regulated beverages with import verification.",
+    tag: "Regulated",
+  },
+  {
+    icon: Wheat,
+    name: "Agro-Inputs",
+    desc: "Fertilizers, pesticides, and seeds where product authenticity protects farmer livelihoods.",
+    tag: "Essential",
+  },
+  {
+    icon: Cpu,
+    name: "High-Value Electronics",
+    desc: "Serialised authentication for electronics where counterfeits pose safety and quality risks.",
+    tag: "Technical",
+  },
+];
+
+export default function SectorsSection() {
+  return (
+    <section className="bg-[#0A0F1C] py-24 relative">
+      <div className="max-w-7xl mx-auto px-6">
+        <div className="text-center mb-16">
+          <span className="text-xs font-medium text-emerald-400 tracking-widest uppercase">
+            Nigeria Deployment Fit
+          </span>
+          <h2 className="text-3xl sm:text-4xl font-bold text-white mt-3 mb-4">
+            Built for Regulated Supply Chains
+          </h2>
+          <p className="text-gray-500 max-w-2xl mx-auto">
+            The strongest near-term fit is counterfeit-sensitive sectors where
+            anti-counterfeit control, partner accountability, and consumer trust
+            are commercially valuable.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {sectors.map((sector, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4, delay: i * 0.08 }}
+              className={`bg-white/[0.02] border border-white/[0.06] rounded-2xl p-6 hover:border-emerald-500/20 transition-all duration-300 ${
+                i === 0 ? "sm:col-span-2 lg:col-span-1" : ""
+              }`}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <sector.icon className="w-5 h-5 text-emerald-400" />
+                <span className="text-[10px] font-medium text-emerald-400/60 bg-emerald-500/10 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                  {sector.tag}
+                </span>
+              </div>
+              <h3 className="text-white font-semibold mb-2">{sector.name}</h3>
+              <p className="text-gray-500 text-sm leading-relaxed">{sector.desc}</p>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
