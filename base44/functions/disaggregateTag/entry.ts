@@ -5,7 +5,7 @@
  *
  * Sets the AggregationLink to 'disaggregated' and clears parent_tag_uid on the TagRegistry.
  */
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
 
 Deno.serve(async (req) => {
   try {

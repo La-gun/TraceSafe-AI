@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import Navbar from "../components/landing/Navbar";
 import HeroSection from "../components/landing/HeroSection";
 import ThreeFrontDoors from "../components/landing/ThreeFrontDoors";
@@ -12,6 +12,10 @@ import CTASection from "../components/landing/CTASection";
 import Footer from "../components/landing/Footer";
 
 export default function Home() {
+  useEffect(() => {
+    document.title = "TraceSafe AI";
+  }, []);
+
   return (
     <div className="min-h-screen bg-[#060B18]">
       <header role="banner">

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">TraceSafe AI</string>
+    <string name="title_activity_main">TraceSafe AI</string>
+    <string name="package_name">com.tracesafe.ai</string>
+    <string name="custom_url_scheme">com.tracesafe.ai</string>
+</resources>

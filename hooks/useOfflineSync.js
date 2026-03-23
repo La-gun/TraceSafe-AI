@@ -73,6 +73,30 @@ function markDraftSynced(id) {
   writeLS(DRAFTS_KEY, updated);
 }
 
+/** Convert base64 data URL to File for Base44 UploadFile (Base44 requires file_urls, not raw data URLs) */
+function dataURLtoFile(dataUrl, filename = "photo.jpg") {
+  const arr = dataUrl.split(",");
+  const mimeMatch = arr[0].match(/:(.*?);/);
+  const mime = mimeMatch ? mimeMatch[1] : "image/jpeg";
+  const bstr = atob(arr[1]);
+  const u8arr = new Uint8Array(bstr.length);
+  for (let i = 0; i < bstr.length; i++) u8arr[i] = bstr.charCodeAt(i);
+  return new File([u8arr], filename, { type: mime });
+}
+
+/** Upload draft photos (data URLs) to Base44 and return file_urls. Skips items already URLs. */
+async function uploadDraftPhotos(base44Client, photoUrls) {
+  if (!photoUrls?.length) return [];
+  const uploads = photoUrls.map((item, i) => {
+    if (typeof item === "string" && item.startsWith("data:")) {
+      const file = dataURLtoFile(item, `evidence-${i}.jpg`);
+      return base44Client.integrations.Core.UploadFile({ file }).then((r) => r.file_url);
+    }
+    return Promise.resolve(typeof item === "string" ? item : null);
+  });
+  return (await Promise.all(uploads)).filter(Boolean);
+}
+
 // ── Hook ─────────────────────────────────────────────────────────────────────
 export default function useOfflineSync() {
   const [isOnline, setIsOnline]         = useState(navigator.onLine);
@@ -96,7 +120,11 @@ export default function useOfflineSync() {
 
     for (const draft of pending) {
       try {
-        await base44.entities.InspectionReport.create(draft.formData);
+        // Base44 expects photo_urls from UploadFile, not base64 data URLs. Upload offline photos first.
+        const photoUrls = draft.formData?.photo_urls || [];
+        const uploadedPhotoUrls = await uploadDraftPhotos(base44, photoUrls);
+        const payload = { ...draft.formData, photo_urls: uploadedPhotoUrls };
+        await base44.entities.InspectionReport.create(payload);
         markDraftSynced(draft.id);
         syncedAny = true;
       } catch {

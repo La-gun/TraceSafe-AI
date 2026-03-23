@@ -8,12 +8,12 @@ Deno.serve(async (req) => {
 
     const { question, history = [] } = await req.json();
 
-    // Fetch all relevant data in parallel
+    // Fetch only what we need (limits aligned with slice usage)
     const [reports, alerts, batches, scanEvents] = await Promise.all([
-      base44.asServiceRole.entities.ConsumerReport.list('-created_date', 100),
-      base44.asServiceRole.entities.DiversionAlert.list('-created_date', 100),
-      base44.asServiceRole.entities.Batch.list('-created_date', 100),
-      base44.asServiceRole.entities.ScanEvent.list('-created_date', 200),
+      base44.asServiceRole.entities.ConsumerReport.list('-created_date', 50),
+      base44.asServiceRole.entities.DiversionAlert.list('-created_date', 50),
+      base44.asServiceRole.entities.Batch.list('-created_date', 50),
+      base44.asServiceRole.entities.ScanEvent.list('-created_date', 80),
     ]);
 
     const today = new Date().toISOString().split('T')[0];
@@ -27,16 +27,16 @@ You have access to live supply chain intelligence data. Answer questions concise
 Today's date is ${today}.
 
 CONSUMER REPORTS (incidents reported by consumers):
-${JSON.stringify(reports.slice(0, 50))}
+${JSON.stringify(reports)}
 
 DIVERSION ALERTS:
-${JSON.stringify(alerts.slice(0, 50))}
+${JSON.stringify(alerts)}
 
 BATCHES:
-${JSON.stringify(batches.slice(0, 50))}
+${JSON.stringify(batches)}
 
 SCAN EVENTS (recent):
-${JSON.stringify(scanEvents.slice(0, 80))}
+${JSON.stringify(scanEvents)}
 
 Guidelines:
 - Format lists with bullet points, use **bold** for important items

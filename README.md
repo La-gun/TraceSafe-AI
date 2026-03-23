@@ -23,10 +23,16 @@ VITE_BASE44_APP_BASE_URL=your_backend_url
 
 e.g.
 VITE_BASE44_APP_ID=cbef744a8545c389ef439ea6
-VITE_BASE44_APP_BASE_URL=https://my-to-do-list-81bfaad7.base44.app
+VITE_BASE44_APP_BASE_URL=https://verify-track-guard.base44.app
 ```
 
 Run the app: `npm run dev`
+
+**Database & demo data**
+
+Tables live in **Base44** (not in this repo). See [`docs/DATABASE.md`](docs/DATABASE.md) for entities, seeding, and optimisations.
+
+After deploy, run the **`seedDemoData`** function once as an **admin** user (from the app or Base44 tools) to create demo batches, NFC tags, alerts, and sample incidents.
 
 **Publish your changes**
 

@@ -6,7 +6,7 @@
  *   open_alerts, critical_alerts, active_batches, recalled_batches,
  *   scan_by_state (top 10), recent_alerts, recent_events
  */
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
 
 Deno.serve(async (req) => {
   try {
@@ -22,36 +22,47 @@ Deno.serve(async (req) => {
       base44.asServiceRole.entities.CustodyTransfer.list('-created_date', 100),
     ]);
 
-    // Scan breakdowns
-    const total_scans      = scanEvents.length;
-    const authentic_scans  = scanEvents.filter(s => s.status === 'authentic').length;
-    const suspicious_scans = scanEvents.filter(s => s.status === 'suspicious').length;
-    const counterfeit_scans = scanEvents.filter(s => s.status === 'counterfeit').length;
-
-    // Alerts
-    const open_alerts     = alerts.filter(a => a.status === 'open').length;
-    const critical_alerts = alerts.filter(a => a.severity === 'critical' && a.status === 'open').length;
-
-    // Batches
-    const active_batches   = batches.filter(b => b.enforcement_status === 'active').length;
-    const recalled_batches = batches.filter(b => b.enforcement_status === 'recalled').length;
-    const held_batches     = batches.filter(b => ['hold', 'quarantine'].includes(b.enforcement_status)).length;
-
-    // Scans by state (top 10)
+    // Scan breakdowns + per-state counts in one pass
+    let authentic_scans = 0, suspicious_scans = 0, counterfeit_scans = 0;
     const stateCount = {};
+    const suspStateCount = {};
     for (const s of scanEvents) {
-      if (s.state) stateCount[s.state] = (stateCount[s.state] || 0) + 1;
+      if (s.status === 'authentic') authentic_scans++;
+      else if (s.status === 'suspicious') suspicious_scans++;
+      else if (s.status === 'counterfeit') counterfeit_scans++;
+      if (s.state) {
+        stateCount[s.state] = (stateCount[s.state] || 0) + 1;
+        if (s.status === 'suspicious') {
+          suspStateCount[s.state] = (suspStateCount[s.state] || 0) + 1;
+        }
+      }
     }
+    const total_scans = scanEvents.length;
+
+    // Alerts (single pass)
+    let open_alerts = 0, critical_alerts = 0;
+    const openAlertRows = [];
+    for (const a of alerts) {
+      if (a.status === 'open') {
+        open_alerts++;
+        if (a.severity === 'critical') critical_alerts++;
+        if (openAlertRows.length < 10) openAlertRows.push(a);
+      }
+    }
+
+    // Batches (single pass)
+    let active_batches = 0, recalled_batches = 0, held_batches = 0;
+    for (const b of batches) {
+      const es = b.enforcement_status;
+      if (es === 'active') active_batches++;
+      else if (es === 'recalled') recalled_batches++;
+      else if (es === 'hold' || es === 'quarantine') held_batches++;
+    }
+
     const scan_by_state = Object.entries(stateCount)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 10)
       .map(([state, count]) => ({ state, count }));
-
-    // Suspicious scans by state
-    const suspStateCount = {};
-    for (const s of scanEvents.filter(e => e.status === 'suspicious')) {
-      if (s.state) suspStateCount[s.state] = (suspStateCount[s.state] || 0) + 1;
-    }
     const suspicious_by_state = Object.entries(suspStateCount)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 10)
@@ -89,7 +100,7 @@ Deno.serve(async (req) => {
       scan_by_state,
       suspicious_by_state,
       scan_by_day,
-      recent_alerts: alerts.filter(a => a.status === 'open').slice(0, 10),
+      recent_alerts: openAlertRows,
       recent_events: scanEvents.slice(0, 20),
       recent_transfers: transfers.slice(0, 10),
     });

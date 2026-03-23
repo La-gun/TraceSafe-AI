@@ -7,7 +7,7 @@
  * Returns the full product + batch record, diversion risk score,
  * chain history, and any active alerts.
  */
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
 
 Deno.serve(async (req) => {
   try {

@@ -11,6 +11,9 @@ export default function TopBar() {
   const { pathname } = useLocation();
   const { stackDepth, tabRoot } = useTabHistory();
 
+  // Touchpoint pages use full Navbar + in-page nav (matches deployed app)
+  if (pathname.startsWith("/touchpoints/")) return null;
+
   // Hide on root routes
   const isRoot = ROOT_ROUTES.some((r) => pathname === r);
   if (isRoot) return null;
@@ -58,6 +61,7 @@ function deriveTitleFromPath(pathname) {
     "/touchpoints/wholesale-transfer": "Wholesale Transfer",
     "/touchpoints/retail-receipt":     "Retail Receipt",
     "/touchpoints/end-user-verify":    "End-User Verify",
+    "/RiskDashboard":                  "Risk Dashboard",
   };
   if (map[pathname]) return map[pathname];
   const seg = pathname.split("/").filter(Boolean).pop() || "";

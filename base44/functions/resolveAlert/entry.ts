@@ -7,7 +7,7 @@
  * }
  * status: assigned | under_investigation | resolved | false_positive
  */
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
 
 Deno.serve(async (req) => {
   try {

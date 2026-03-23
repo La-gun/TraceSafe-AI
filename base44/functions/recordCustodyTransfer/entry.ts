@@ -10,7 +10,7 @@
  *
  * transfer_type: port_receipt | wholesale_transfer | retail_receipt | returns | seizure
  */
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
 
 Deno.serve(async (req) => {
   try {
