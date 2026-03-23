@@ -1,0 +1,22 @@
+{
+  "name": "TraceGuard — Pharmaceutical Traceability Platform",
+  "short_name": "TraceGuard",
+  "description": "NAFDAC-aligned digital enforcement and anti-counterfeit traceability for Nigeria's pharmaceutical supply chain.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#060B18",
+  "theme_color": "#060B18",
+  "lang": "en-NG",
+  "categories": ["health", "business", "utilities"],
+  "icons": [
+    {
+      "src": "https://base44.com/logo_v2.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "prefer_related_applications": false
+}
