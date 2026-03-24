@@ -3,7 +3,7 @@
  * Saves to localStorage as a draft when offline, submits directly when online.
  */
 import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { base44 } from "@/lib/base44Client";
 import { saveDraft } from "@/hooks/useOfflineSync";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

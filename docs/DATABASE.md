@@ -30,7 +30,7 @@ Function: **`seedDemoData`** (`base44/functions/seedDemoData/entry.ts`)
 ### From the browser (after admin login)
 
 ```js
-const { base44 } = await import('/src/api/base44Client.js'); // path as in your app
+const { base44 } = await import('/src/lib/base44Client.js'); // path as in your app
 await base44.functions.invoke('seedDemoData', { dryRun: true });  // preview
 await base44.functions.invoke('seedDemoData', {});                // apply
 ```

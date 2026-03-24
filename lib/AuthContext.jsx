@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
+import { base44 } from '@/lib/base44Client';
 import { appParams } from '@/lib/app-params';
 
 /** Fetch app public settings (avoids brittle SDK deep import of createAxiosClient) */

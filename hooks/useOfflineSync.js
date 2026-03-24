@@ -9,7 +9,7 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { base44 } from "@/api/base44Client";
+import { base44 } from "@/lib/base44Client";
 
 const SCAN_CACHE_KEY  = "traceguard_scan_cache";
 const DRAFTS_KEY      = "traceguard_drafts";

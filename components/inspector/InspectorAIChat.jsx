@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { base44 } from "@/lib/base44Client";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { Send, Loader2, Bot, User, Sparkles, RotateCcw } from "lucide-react";
@@ -16,6 +16,7 @@ const SUGGESTED = [
 
 function ChatMessage({ msg }) {
   const isUser = msg.role === "user";
+  const citations = !isUser && Array.isArray(msg.citations) ? msg.citations : [];
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -51,6 +52,20 @@ function ChatMessage({ msg }) {
             <ReactMarkdown>{msg.content}</ReactMarkdown>
           </div>
         )}
+        {citations.length > 0 && (
+          <div className="mt-2 pt-2 border-t border-white/[0.08]">
+            <p className="text-[9px] uppercase tracking-wider text-violet-400/90 mb-1.5">Sources (verified)</p>
+            <ul className="text-[10px] text-gray-500 space-y-1 pl-0 list-none">
+              {citations.map((c, j) => (
+                <li key={`${c.entity}-${c.id}-${j}`} className="flex flex-wrap gap-x-1.5 gap-y-0">
+                  <span className="text-gray-300">{c.label}</span>
+                  <span className="text-gray-600 font-mono text-[9px]">{c.entity}</span>
+                  <span className="text-gray-600 font-mono text-[9px] truncate max-w-[140px]" title={c.id}>{c.id}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
         <p className={`text-[9px] mt-1.5 ${isUser ? "text-emerald-400/50 text-right" : "text-gray-600"}`}>
           {msg.timestamp}
         </p>
@@ -80,7 +95,7 @@ export default function InspectorAIChat() {
   const [messages, setMessages] = useState([
     {
       role: "assistant",
-      content: "Hello, Inspector. I have access to live incident reports, diversion alerts, batch records, and scan events. Ask me anything — for example:\n\n- *\"Show me all active recalls this month\"*\n- *\"Summarize recent findings for Amoxicillin\"*\n- *\"Which batches are flagged in Kano?\"*",
+      content: "Hello, Inspector. I pull answers from your live data using targeted queries, then cite the exact records used. Ask me anything — for example:\n\n- *\"Show me all active recalls this month\"*\n- *\"Summarize recent findings for Amoxicillin\"*\n- *\"Which batches are flagged in Kano?\"*",
       timestamp: "Now",
     },
   ]);
@@ -111,7 +126,8 @@ export default function InspectorAIChat() {
     });
 
     const answer = response.data?.answer || "Sorry, I couldn't retrieve an answer. Please try again.";
-    setMessages(prev => [...prev, { role: "assistant", content: answer, timestamp: timestamp() }]);
+    const citations = Array.isArray(response.data?.citations) ? response.data.citations : [];
+    setMessages(prev => [...prev, { role: "assistant", content: answer, citations, timestamp: timestamp() }]);
     setLoading(false);
   };
 
@@ -137,7 +153,7 @@ export default function InspectorAIChat() {
           </div>
           <div>
             <p className="text-xs font-bold text-white">Inspector AI</p>
-            <p className="text-[9px] text-gray-500">Live data · Natural language queries</p>
+            <p className="text-[9px] text-gray-500">Tool-routed data · Verified sources</p>
           </div>
         </div>
         <button onClick={clearChat} aria-label="Clear chat"

@@ -3,7 +3,7 @@
  * and allows manual retry or deletion of individual drafts.
  */
 import React, { useState, useEffect, useCallback } from "react";
-import { base44 } from "@/api/base44Client";
+import { base44 } from "@/lib/base44Client";
 import { getPendingDrafts, saveDraft } from "@/hooks/useOfflineSync";
 import { motion, AnimatePresence } from "framer-motion";
 import {

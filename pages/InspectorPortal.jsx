@@ -5,7 +5,7 @@ import {
   ArrowLeft, Smartphone, Sparkles, Loader2, CheckCircle, AlertTriangle,
   ShieldAlert, Package,
 } from "lucide-react";
-import { base44 } from "@/api/base44Client";
+import { base44 } from "@/lib/base44Client";
 import useOfflineSync, { setCachedProduct } from "@/hooks/useOfflineSync";
 import OfflineBanner from "@/components/inspector/OfflineBanner";
 import OfflineDraftForm from "@/components/inspector/OfflineDraftForm";
@@ -210,6 +210,36 @@ export default function InspectorPortal() {
                                 </p>
                               )}
                             </div>
+                          </div>
+                        )}
+                        {scanResult.advisory_risk && (
+                          <div className="rounded-xl border border-blue-500/20 bg-blue-500/5 px-3 py-2.5 space-y-1.5">
+                            <p className="text-[10px] font-semibold uppercase tracking-wider text-blue-300/90">
+                              Advisory risk (triage)
+                            </p>
+                            <div className="flex items-baseline gap-2">
+                              <span className="text-lg font-bold text-white tabular-nums">
+                                {scanResult.advisory_risk.advisory_risk_score}
+                              </span>
+                              <span className="text-[10px] text-gray-500">
+                                / 100 · {scanResult.advisory_risk.advisory_risk_band}
+                              </span>
+                            </div>
+                            {scanResult.advisory_risk.advisory_factors?.length > 0 && (
+                              <div className="flex flex-wrap gap-1">
+                                {scanResult.advisory_risk.advisory_factors.map((f) => (
+                                  <span
+                                    key={f}
+                                    className="text-[9px] px-1.5 py-0.5 rounded-md bg-white/[0.06] text-gray-400 font-mono"
+                                  >
+                                    {f}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+                            <p className="text-[9px] text-gray-600 leading-snug">
+                              {scanResult.advisory_risk.advisory_disclaimer}
+                            </p>
                           </div>
                         )}
                       </>

@@ -8,7 +8,7 @@ import NigeriaHeatmap from "@/components/risk/NigeriaHeatmap";
 import DraftManager from "@/components/risk/DraftManager";
 import BatchDetailModal from "@/components/risk/BatchDetailModal";
 import usePullToRefresh from "@/hooks/usePullToRefresh.jsx";
-import { base44 } from "@/api/base44Client";
+import { base44 } from "@/lib/base44Client";
 
 export default function RiskDashboard() {
   const [tab, setTab] = useState("heatmap");

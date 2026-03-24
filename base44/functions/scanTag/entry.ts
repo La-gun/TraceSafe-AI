@@ -9,6 +9,9 @@
  */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
 
+const ADVISORY_DISCLAIMER =
+  'Advisory only — does not replace rule-based scan status. Use for triage and investigation priority.';
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -44,6 +47,7 @@ Deno.serve(async (req) => {
         status: 'suspicious',
         alert: 'Tag not found in registry. This product may be counterfeit.',
         anomaly_flags: ['unregistered_tag'],
+        advisory_risk: advisoryRiskUnregistered(),
       });
     }
 
@@ -54,6 +58,8 @@ Deno.serve(async (req) => {
     // 3. Detect anomalies
     const anomaly_flags = [];
     let scan_status = 'authentic';
+    /** Scans for this tag in the last hour, including the event we are about to record */
+    let scans_in_hour_including_this = 0;
 
     if (batch) {
       // Expired product
@@ -83,6 +89,7 @@ Deno.serve(async (req) => {
       const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
       const recentScans = await base44.asServiceRole.entities.ScanEvent.filter({ tag_uid });
       const veryRecentScans = recentScans.filter(s => s.created_date > oneHourAgo);
+      scans_in_hour_including_this = veryRecentScans.length + 1;
       if (veryRecentScans.length >= 3) {
         anomaly_flags.push('repeat_scan');
         scan_status = 'suspicious';
@@ -157,14 +164,25 @@ Deno.serve(async (req) => {
     const chainHistory = await base44.asServiceRole.entities.ScanEvent.filter({ batch_number: tag.batch_number });
     chainHistory.sort((a, b) => new Date(a.created_date) - new Date(b.created_date));
 
+    const batchForResponse = mergeBatchAfterScan(batch, anomaly_flags, event_type);
+
+    const advisory_risk = computeAdvisoryRisk({
+      batch: batchForResponse,
+      anomaly_flags,
+      chainHistory,
+      scansInHourIncludingThis: scans_in_hour_including_this,
+      rule_scan_status: scan_status,
+    });
+
     return Response.json({
       found: true,
       status: scan_status,
       anomaly_flags,
       tag,
-      batch,
+      batch: batchForResponse || batch,
       scan_event_id: scanEvent.id,
       chain_history: chainHistory,
+      advisory_risk,
     });
 
   } catch (error) {
@@ -191,4 +209,99 @@ function buildAlertDetails(flags, product, state, location) {
   if (flags.includes('expired_product')) msgs.push('Product has passed its expiry date.');
   if (flags.includes('unregistered_tag')) msgs.push('Tag UID not found in NAFDAC registry — possible counterfeit.');
   return msgs.join(' ');
+}
+
+function mergeBatchAfterScan(batch, anomaly_flags, event_type) {
+  if (!batch) return null;
+  const merged = {
+    ...batch,
+    total_scan_count: (batch.total_scan_count || 0) + 1,
+    supply_chain_stage: eventTypeToStage(event_type),
+  };
+  if (anomaly_flags.length > 0) {
+    merged.suspicious_scan_count = (batch.suspicious_scan_count || 0) + 1;
+    merged.diversion_score = Math.min(100, (batch.diversion_score || 0) + 15);
+    merged.anomaly_flags = [...new Set([...(batch.anomaly_flags || []), ...anomaly_flags])];
+  }
+  return merged;
+}
+
+function normState(s) {
+  return String(s ?? '')
+    .toLowerCase()
+    .trim();
+}
+
+/**
+ * Heuristic advisory layer on top of rule outputs — never changes `status` / `anomaly_flags`.
+ */
+function computeAdvisoryRisk(opts) {
+  const factors = [];
+  let score = 0;
+  const { batch, anomaly_flags, chainHistory, scansInHourIncludingThis, rule_scan_status } = opts;
+
+  if (batch) {
+    const div = Number(batch.diversion_score ?? 0);
+    if (!Number.isNaN(div) && div > 0) {
+      score += Math.min(38, div * 0.38);
+      if (div >= 75) factors.push('batch_diversion_score_high');
+      else if (div >= 50) factors.push('batch_diversion_score_elevated');
+    }
+
+    const es = String(batch.enforcement_status || '');
+    if (es === 'active' && !Number.isNaN(Number(batch.diversion_score)) && Number(batch.diversion_score) >= 60) {
+      score += 6;
+      factors.push('active_batch_elevated_diversion');
+    }
+  }
+
+  score += Math.min(34, anomaly_flags.length * 11);
+  for (const f of anomaly_flags) {
+    factors.push(`anomaly:${f}`);
+  }
+
+  const recent = (chainHistory || []).slice(-15);
+  const states = new Set();
+  for (const ev of recent) {
+    const st = normState(ev.state);
+    if (st) states.add(st);
+  }
+  if (states.size >= 4) {
+    score += 18;
+    factors.push('chain_multi_state_spread');
+  } else if (states.size === 3) {
+    score += 10;
+    factors.push('chain_several_states');
+  }
+
+  if (scansInHourIncludingThis === 2) {
+    score += 12;
+    factors.push('rapid_rescan_subthreshold');
+  } else if (scansInHourIncludingThis >= 4) {
+    score += 8;
+    factors.push('high_scan_velocity');
+  }
+
+  if (rule_scan_status === 'authentic' && score >= 55 && anomaly_flags.length === 0) {
+    factors.push('elevated_context_rule_clean');
+  }
+
+  score = Math.round(Math.min(100, Math.max(0, score)));
+  const band = score >= 72 ? 'high' : score >= 42 ? 'elevated' : 'low';
+
+  return {
+    advisory_risk_score: score,
+    advisory_risk_band: band,
+    advisory_factors: [...new Set(factors)],
+    advisory_disclaimer: ADVISORY_DISCLAIMER,
+  };
+}
+
+function advisoryRiskUnregistered() {
+  return {
+    advisory_risk_score: 94,
+    advisory_risk_band: 'high',
+    advisory_factors: ['unregistered_tag'],
+    advisory_disclaimer: ADVISORY_DISCLAIMER,
+  };
 }

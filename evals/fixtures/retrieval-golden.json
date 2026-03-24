@@ -1,0 +1,24 @@
+{
+  "cases": [
+    {
+      "id": "amoxicillin-recall",
+      "query": "amoxicillin recall batch hold antibiotic",
+      "must_include_chunk_ids": ["reg-nafd-amox-recall-sample-003"]
+    },
+    {
+      "id": "hand-sanitizer",
+      "query": "hand sanitiser ethanol recall dispose",
+      "must_include_chunk_ids": ["reg-nafd-hand-sanitizer-recall-sample-004"]
+    },
+    {
+      "id": "lagos-wholesale",
+      "query": "Lagos Apapa wholesale port inspection",
+      "must_include_chunk_ids": ["reg-nafd-lagos-zone-006"]
+    },
+    {
+      "id": "serialization-nfc",
+      "query": "NFC tag serialization wholesale diversion",
+      "must_include_chunk_ids": ["reg-nafd-traceability-005"]
+    }
+  ]
+}
