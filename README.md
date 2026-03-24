@@ -28,6 +28,8 @@ VITE_BASE44_APP_BASE_URL=https://verify-track-guard.base44.app
 
 For the **separate NFT registry** (PostgreSQL), configure connection strings as **Base44 function secrets** (not in Vite): `NFT_REGISTRY_DATABASE_URL` or `DATABASE_URL`, plus optional `NFT_REGISTRY_TENANT_*` — see [`docs/DATABASE.md`](docs/DATABASE.md).
 
+**Procurement / architecture notes** (portability, dual-store behaviour, idempotency): [`docs/ENTERPRISE_AND_PORTABILITY.md`](docs/ENTERPRISE_AND_PORTABILITY.md).
+
 Run the app: `npm run dev`
 
 **Database & demo data**

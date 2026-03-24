@@ -97,6 +97,8 @@ Apply order (Postgres): `001_schema.sql` then `002_triggers.sql`.
 
 Integration pattern: event-driven sync (commission in Base44 → queue message → upsert NFT DB) or nightly reconciliation jobs; keep Base44 authoritative for **scans**, NFT DB authoritative for **taxonomy, mint, and marketing/legal metadata**.
 
+For a **procurement-accurate** summary (dependency vs lock-in, optional single-store mode, idempotent upserts, `NFT_REGISTRY_SYNC_STRICT`), see [`ENTERPRISE_AND_PORTABILITY.md`](./ENTERPRISE_AND_PORTABILITY.md).
+
 ### Wired in this repo
 
 - **`commissionTag`** — after a successful Base44 write, calls `syncCommissionedTagToNftRegistry` (`base44/functions/_shared/nftRegistrySync.ts`). Response includes `nft_registry_sync` (`skipped` | `ok` | `ok: false` + error).

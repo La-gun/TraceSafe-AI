@@ -5,7 +5,7 @@ import { defineConfig } from 'vite'
 
 // https://vite.dev/config/
 export default defineConfig({
-  logLevel: 'error', // Suppress warnings, only show errors
+  // Default info level so the dev URL is printed; use VITE_LOG_LEVEL=error for quieter output
   resolve: {
     alias: {
       '@': path.resolve(__dirname, '.'),
@@ -27,6 +27,9 @@ export default defineConfig({
       },
     },
     chunkSizeWarningLimit: 700,
+  },
+  server: {
+    open: true,
   },
   plugins: [
     base44({
