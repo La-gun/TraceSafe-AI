@@ -52,6 +52,17 @@ Or use the **Dev tools → Network** tab while triggering a small admin-only UI 
 
 Signed-in users hit **`getDashboardStats`**, which powers the regulator **Dashboard** charts and regional bars from real `ScanEvent` / `DiversionAlert` data once the seed has run.
 
+### Risk map & Incident Manager (entity ACL)
+
+Direct `base44.entities.*.list()` from the browser often returns **empty arrays** if your Base44 entity rules restrict reads. These functions use **`asServiceRole`** so signed-in users still receive data (same pattern as `getDashboardStats`):
+
+| Function | Used by | Returns |
+|----------|---------|---------|
+| **`getRiskMapData`** | `/RiskDashboard` | `{ batches, alerts }` |
+| **`listConsumerReports`** | `/IncidentManager` | `{ reports }` |
+
+Both require an authenticated session (`auth.me()`). Deploy the new function folders with your usual Base44 / Git sync flow.
+
 ### Demo NFC UIDs (Inspector portal)
 
 After seeding:

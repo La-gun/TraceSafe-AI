@@ -17,17 +17,26 @@ export default function RiskDashboard() {
     document.title = "RiskDashboard | TraceSafe AI";
   }, []);
 
-  const { data: batches = [], isLoading: loadingBatches, refetch: refetchBatches } = useQuery({
-    queryKey: ["risk-batches"],
-    queryFn: () => base44.entities.Batch.list("-created_date", 200),
+  const {
+    data: riskPayload,
+    isLoading,
+    isError,
+    error,
+    refetch: refetchRisk,
+  } = useQuery({
+    queryKey: ["risk-map-data"],
+    queryFn: async () => {
+      const res = await base44.functions.invoke("getRiskMapData", {});
+      const d = res?.data ?? res;
+      if (d?.error) throw new Error(d.error);
+      return d;
+    },
+    retry: 1,
+    staleTime: 30_000,
   });
 
-  const { data: alerts = [], isLoading: loadingAlerts, refetch: refetchAlerts } = useQuery({
-    queryKey: ["risk-alerts"],
-    queryFn: () => base44.entities.DiversionAlert.list("-created_date", 200),
-  });
-
-  const isLoading = loadingBatches || loadingAlerts;
+  const batches = riskPayload?.batches ?? [];
+  const alerts = riskPayload?.alerts ?? [];
 
   const stats = useMemo(() => {
     const openAlerts = alerts.filter((a) => a.status === "open");
@@ -46,15 +55,12 @@ export default function RiskDashboard() {
   }, [batches, alerts]);
 
   const onPullRefresh = useCallback(async () => {
-    await Promise.all([refetchBatches(), refetchAlerts()]);
-  }, [refetchBatches, refetchAlerts]);
+    await refetchRisk();
+  }, [refetchRisk]);
 
   const { containerRef, PullIndicator } = usePullToRefresh(onPullRefresh);
 
-  const handleRefresh = () => {
-    refetchBatches();
-    refetchAlerts();
-  };
+  const handleRefresh = () => refetchRisk();
 
   return (
     <div className="min-h-screen bg-[#060B18] flex flex-col">
@@ -68,6 +74,19 @@ export default function RiskDashboard() {
               <p className="text-sm text-gray-500 mt-1">
                 Geospatial risk intelligence across Nigeria. Colour-coded by diversion score and alert frequency.
               </p>
+              {isError && (
+                <p className="text-xs text-amber-400/90 mt-2 max-w-md">
+                  Sign in to load live batch and alert data, or check that the{" "}
+                  <code className="text-gray-400">getRiskMapData</code> function is deployed.{" "}
+                  {error?.message ? `(${error.message})` : ""}
+                </p>
+              )}
+              {!isLoading && !isError && batches.length === 0 && alerts.length === 0 && (
+                <p className="text-xs text-gray-500 mt-2 max-w-lg">
+                  No batches or alerts in the workspace yet. As an admin, run{" "}
+                  <code className="text-emerald-500/80">seedDemoData</code> (see docs/DATABASE.md) to load demo geography and diversion data.
+                </p>
+              )}
             </div>
             <button
               type="button"

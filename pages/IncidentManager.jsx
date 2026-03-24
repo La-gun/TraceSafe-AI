@@ -19,9 +19,16 @@ export default function IncidentManager() {
     queryClient.invalidateQueries({ queryKey: QUERY_KEY })
   );
 
-  const { data: reports = [], isLoading } = useQuery({
+  const { data: reports = [], isLoading, isError, error } = useQuery({
     queryKey: QUERY_KEY,
-    queryFn: () => base44.entities.ConsumerReport.list("-created_date", 100),
+    queryFn: async () => {
+      const res = await base44.functions.invoke("listConsumerReports", { limit: 150 });
+      const d = res?.data ?? res;
+      if (d?.error) throw new Error(d.error);
+      return d.reports ?? [];
+    },
+    retry: 1,
+    staleTime: 30_000,
   });
 
   const updateMutation = useMutation({
@@ -71,6 +78,17 @@ export default function IncidentManager() {
           <p className="text-gray-400 text-sm max-w-2xl mt-1">
             Consumer-reported serial numbers escalated for investigation. Flag verified counterfeits, assign quarantine actions, and track resolution.
           </p>
+          {isError && (
+            <p className="text-xs text-amber-400/90 mt-3 max-w-xl">
+              Sign in to load the incident queue, and ensure <code className="text-gray-400">listConsumerReports</code> is deployed.{" "}
+              {error?.message ? `(${error.message})` : ""}
+            </p>
+          )}
+          {!isLoading && !isError && reports.length === 0 && (
+            <p className="text-xs text-gray-500 mt-3 max-w-xl">
+              No consumer reports yet. Run <code className="text-emerald-500/80">seedDemoData</code> as admin or submit checks from the Consumer Assist flow.
+            </p>
+          )}
         </div>
       </section>
 

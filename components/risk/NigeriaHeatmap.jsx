@@ -34,9 +34,82 @@ function normaliseState(s) {
   return s.trim().replace(/\s+/g, "_");
 }
 
-function riskLevel(score) {
+/** Map city / informal labels → STATE_CENTRES key (plant_location often uses cities). */
+const STATE_ALIAS = {
+  Abuja: "FCT",
+  Mararaba: "Nasarawa",
+  Keffi: "Nasarawa",
+  Port_Harcourt: "Rivers",
+  PH: "Rivers",
+  Onitsha: "Anambra",
+  Awka: "Anambra",
+  Nnewi: "Anambra",
+  Abeokuta: "Ogun",
+  Sagamu: "Ogun",
+  Ibadan: "Oyo",
+  Oshogbo: "Osun",
+  Aba: "Abia",
+  Umuahia: "Abia",
+  Calabar: "Cross_River",
+  Uyo: "Akwa_Ibom",
+  Maiduguri: "Borno",
+  Jos: "Plateau",
+  Lafia: "Nasarawa",
+  Minna: "Niger",
+  Lokoja: "Kogi",
+  Benin: "Edo",
+  Akure: "Ondo",
+  Ado_Ekiti: "Ekiti",
+  Yenagoa: "Bayelsa",
+  Warri: "Delta",
+  Asaba: "Delta",
+  Owerri: "Imo",
+  Gombe: "Gombe",
+  Damaturu: "Yobe",
+  Dutse: "Jigawa",
+  Gusau: "Zamfara",
+  Birnin_Kebbi: "Kebbi",
+  Bauchi: "Bauchi",
+  Yola: "Adamawa",
+  Jalingo: "Taraba",
+  Garki: "FCT",
+  Wuse: "FCT",
+  Apapa: "Lagos",
+  Ikeja: "Lagos",
+  Victoria_Island: "Lagos",
+  Sabon_Gari: "Kano",
+};
+
+function resolveStateKey(raw) {
+  if (!raw || typeof raw !== "string") return null;
+  const head = raw.split("—")[0].split("|")[0].trim();
+  if (!head) return null;
+  const firstSegment = head.split(",")[0].trim();
+  const tryKeys = [firstSegment, head];
+  let norm = null;
+  for (const t of tryKeys) {
+    norm = normaliseState(t);
+    if (norm && STATE_CENTRES[norm]) return norm;
+    if (norm && STATE_ALIAS[norm] && STATE_CENTRES[STATE_ALIAS[norm]]) return STATE_ALIAS[norm];
+  }
+  const lower = firstSegment.toLowerCase();
+  for (const key of Object.keys(STATE_CENTRES)) {
+    const label = key.replace(/_/g, " ").toLowerCase();
+    if (lower === label) return key;
+  }
+  for (const [aliasNorm, stateKey] of Object.entries(STATE_ALIAS)) {
+    const a = aliasNorm.replace(/_/g, " ").toLowerCase();
+    if (lower === a || lower.startsWith(`${a},`) || lower.includes(`, ${a}`)) {
+      if (STATE_CENTRES[stateKey]) return stateKey;
+    }
+  }
+  return null;
+}
+
+function riskLevel(score, alertCount = 0) {
   if (score >= 75) return "high";
   if (score >= 40) return "medium";
+  if (alertCount > 0) return "medium";
   return "low";
 }
 
@@ -53,26 +126,33 @@ export default function NigeriaHeatmap({ batches, alerts, isLoading, onLocationS
   // Group batches by state and compute aggregate risk per state
   const stateRiskMap = useMemo(() => {
     const map = {};
+
     batches.forEach((batch) => {
-      const states = [
-        ...(batch.authorised_zones || []),
-        ...(batch.anomaly_flags?.length ? [] : []),
-      ];
-      // Use plant_location state or authorised_zones
-      const rawState = batch.plant_location?.split("—")?.[0]?.split(",")?.[0]?.trim()
-        || (batch.authorised_zones || [])[0];
-      if (!rawState) return;
-      const key = normaliseState(rawState);
-      if (!map[key]) map[key] = { batches: [], alertCount: 0, maxScore: 0, state: rawState };
+      const plantPart = batch.plant_location?.split("—")?.[0]?.split(",")?.[0]?.trim();
+      let key = resolveStateKey(plantPart);
+      if (!key && Array.isArray(batch.authorised_zones)) {
+        for (const z of batch.authorised_zones) {
+          key = resolveStateKey(z);
+          if (key) break;
+        }
+      }
+      if (!key) return;
+      const display = key.replace(/_/g, " ");
+      if (!map[key]) map[key] = { batches: [], alertCount: 0, maxScore: 0, state: display };
       map[key].batches.push(batch);
       const score = batch.diversion_score || 0;
       if (score > map[key].maxScore) map[key].maxScore = score;
     });
 
-    // Layer in alert counts
     alerts.forEach((alert) => {
-      const key = normaliseState(alert.detected_zone || alert.expected_zone);
-      if (key && map[key]) map[key].alertCount += 1;
+      const raw = alert.detected_zone || alert.expected_zone || alert.detected_location || "";
+      const key = resolveStateKey(raw);
+      if (!key) return;
+      const display = key.replace(/_/g, " ");
+      if (!map[key]) {
+        map[key] = { batches: [], alertCount: 0, maxScore: 0, state: display };
+      }
+      map[key].alertCount += 1;
     });
 
     return map;
@@ -81,7 +161,11 @@ export default function NigeriaHeatmap({ batches, alerts, isLoading, onLocationS
   // Build sorted state list for the ranked view
   const rankedStates = useMemo(() => {
     return Object.entries(stateRiskMap)
-      .map(([key, data]) => ({ key, ...data, risk: riskLevel(data.maxScore) }))
+      .map(([key, data]) => ({
+        key,
+        ...data,
+        risk: riskLevel(data.maxScore, data.alertCount),
+      }))
       .sort((a, b) => b.maxScore - a.maxScore);
   }, [stateRiskMap]);
 
@@ -129,7 +213,7 @@ export default function NigeriaHeatmap({ batches, alerts, isLoading, onLocationS
         <svg viewBox="0 0 600 480" className="w-full h-full absolute inset-0" style={{ minHeight: 420 }}>
           {Object.entries(STATE_CENTRES).map(([stateKey, centre]) => {
             const data = stateRiskMap[stateKey];
-            const risk = data ? riskLevel(data.maxScore) : "none";
+            const risk = data ? riskLevel(data.maxScore, data.alertCount) : "none";
             const cfg = RISK_COLORS[risk];
             const alertCount = data?.alertCount || 0;
             const batchCount = data?.batches?.length || 0;
@@ -176,7 +260,7 @@ export default function NigeriaHeatmap({ batches, alerts, isLoading, onLocationS
           <div className="absolute top-4 right-4 bg-[#111827]/90 backdrop-blur-sm border border-white/[0.10] rounded-2xl p-3 text-xs pointer-events-none min-w-[160px]">
             <p className="font-bold text-white mb-1">{hoveredState.replace(/_/g, " ")}</p>
             <p className="text-gray-400">Batches tracked: <span className="text-white">{stateRiskMap[hoveredState].batches.length}</span></p>
-            <p className="text-gray-400">Max diversion score: <span className={RISK_COLORS[riskLevel(stateRiskMap[hoveredState].maxScore)].text}>{stateRiskMap[hoveredState].maxScore}</span></p>
+            <p className="text-gray-400">Max diversion score: <span className={RISK_COLORS[riskLevel(stateRiskMap[hoveredState].maxScore, stateRiskMap[hoveredState].alertCount)].text}>{stateRiskMap[hoveredState].maxScore}</span></p>
             <p className="text-gray-400">Open alerts: <span className="text-red-400">{stateRiskMap[hoveredState].alertCount}</span></p>
             <p className="text-emerald-400/60 text-[10px] mt-1.5">Click to view batches</p>
           </div>
