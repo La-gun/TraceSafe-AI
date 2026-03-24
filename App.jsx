@@ -30,6 +30,7 @@ const InspectorPortal    = lazy(() => import('./pages/InspectorPortal'));
 const ConsumerAssist     = lazy(() => import('./pages/ConsumerAssist'));
 const IncidentManager    = lazy(() => import('./pages/IncidentManager'));
 const RiskDashboard      = lazy(() => import('./pages/RiskDashboard'));
+const Proof              = lazy(() => import('./pages/Proof'));
 
 // Shared route-level fallback spinner
 const RouteFallback = () => (
@@ -61,6 +62,7 @@ const AnimatedRoutes = () => {
           <Route path="/Solutions"                     element={<PageTransition><Solutions /></PageTransition>} />
           <Route path="/Dashboard"                     element={<PageTransition><Dashboard /></PageTransition>} />
           <Route path="/Contact"                       element={<PageTransition><Contact /></PageTransition>} />
+          <Route path="/Proof"                         element={<PageTransition><Proof /></PageTransition>} />
           <Route path="/Settings"                      element={<PageTransition><Settings /></PageTransition>} />
           <Route path="/touchpoints/manufacture"       element={<PageTransition><Manufacture /></PageTransition>} />
           <Route path="/touchpoints/port-of-entry"     element={<PageTransition><PortOfEntry /></PageTransition>} />

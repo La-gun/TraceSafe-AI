@@ -166,6 +166,45 @@ export default function SecurityTrustSection() {
             ))}
           </ul>
         </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.45, delay: 0.12 }}
+          className="rounded-2xl border border-violet-500/15 bg-violet-500/[0.04] p-6 sm:p-8 mt-10"
+        >
+          <h3 className="text-sm font-semibold text-violet-300/90 uppercase tracking-wider mb-2">
+            AI-assisted features (Inspector &amp; consumer flows)
+          </h3>
+          <p className="text-gray-500 text-xs sm:text-sm mb-5 max-w-3xl">
+            For security questionnaires: models assist with retrieval and wording; they do
+            not replace your enforcement decisions. Technical detail for procurement lives
+            in <code className="text-gray-400 text-[11px]">docs/AI_COMPLIANCE_AND_TRUST.md</code>.
+          </p>
+          <ul className="grid sm:grid-cols-2 gap-5 text-xs sm:text-sm">
+            <li className="text-gray-500 leading-relaxed">
+              <span className="text-white font-medium block mb-1">Grounding</span>
+              Inspector answers use server-queried records only; citations are checked
+              against retrieved data.
+            </li>
+            <li className="text-gray-500 leading-relaxed">
+              <span className="text-white font-medium block mb-1">Human-in-the-loop</span>
+              Holds, recalls, and case resolution stay with signed-in people and workflows —
+              the assistant does not auto-execute enforcement.
+            </li>
+            <li className="text-gray-500 leading-relaxed">
+              <span className="text-white font-medium block mb-1">Subprocessors &amp; retention</span>
+              Inference runs via your hosted backend&apos;s LLM integration; align prompts,
+              logs, and regions with Base44 and your DPA.
+            </li>
+            <li className="text-gray-500 leading-relaxed">
+              <span className="text-white font-medium block mb-1">PII in prompts</span>
+              Chat and slim row payloads may include fields from your data model; treat
+              questions like any sensitive channel and define org policy.
+            </li>
+          </ul>
+        </motion.div>
       </div>
     </section>
   );

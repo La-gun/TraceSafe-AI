@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, ShieldCheck, Route, Gavel } from "lucide-react";
 import { motion } from "framer-motion";
+import OutcomeMetricsStrip from "@/components/landing/OutcomeMetricsStrip";
 
 const THREE_LAYERS = [
   {
@@ -84,15 +85,21 @@ export default function HeroSection() {
           transition={{ duration: 0.7, delay: 0.2 }}
           className="text-lg sm:text-xl text-gray-400 max-w-3xl mx-auto mb-10 leading-relaxed"
         >
-          Enterprise serialisation, GS1 EPCIS supply-chain event capture,
-          and regulator-grade enforcement tooling — built for Nigeria's regulated
-          consumer goods supply chains across any product category.
+          Serialisation, GS1-style aggregation, scan intelligence, and enforcement
+          workflows designed to improve measurable outcomes — partner adoption,
+          alert-to-action traceability, and recall readiness — not just deeper dashboards.
+          <span className="text-gray-500 block mt-3 text-base sm:text-lg">
+            Deep regulatory fit where programmes like NAFDAC set the bar; the same stack
+            extends to multi-region rollouts when you need global reach with local proof.
+          </span>
         </motion.p>
+
+        <OutcomeMetricsStrip />
 
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.3 }}
+          transition={{ duration: 0.7, delay: 0.35 }}
           className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16"
         >
           <Link to="/Contact">

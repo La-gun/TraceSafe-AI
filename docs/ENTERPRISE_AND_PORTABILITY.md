@@ -21,6 +21,8 @@ Business rules and integrations are **versioned in git**. Moving to another host
 
 **Enterprise due diligence** should still include Base44 (or any vendor) **terms, regions, subprocessors, backup/export, and SLAs** — standard for SaaS/BaaS procurement. The earlier “lock-in” wording overstated the case: the risk is **managed-backend dependency**, mitigated by **source ownership**, **documented schemas**, and **optional Postgres under your account**.
 
+**Reducing review friction (fair or not, it affects cycle time):** Lead with **what runs in your repo** (functions, rules, UI), **what Base44 provides** (auth, entity API, execution), and **what can live under your cloud** (NFT registry Postgres). Supply **entity/schema exports**, **diagrams**, and **alignment to patterns buyers already approve** (e.g. hosted Postgres in your account, secrets not in client bundles). For **AI**, use the procurement-aligned brief in [`AI_COMPLIANCE_AND_TRUST.md`](./AI_COMPLIANCE_AND_TRUST.md).
+
 ---
 
 ## Base44 + NFT registry — split of concerns, not two chaotic sources of truth
@@ -74,7 +76,26 @@ These are **intentional hardening levers** for enterprise rollouts; priority ord
 
 ---
 
+## Differentiation: proof over feature depth
+
+Enterprise buyers already have long checklists for **serialization**, **L4/L5 traceability**, and **brand protection**. Competing on **UI depth alone** is a weak wedge. **Commercial narrative** should foreground **evidence**:
+
+- **Adoption** — sites, SKUs, scans, partners onboarded (even anonymised roll-up metrics).
+- **Enforcement linkage** — how alerts and scans connect to **seizures, holds, recalls, or case IDs** (where disclosure allows).
+- **Time-to-recall** — detect → contain → notify (targets and post-incident review).
+
+Product and sales collateral should lead with **one or two quantified outcomes per segment** before deep feature tours.
+
+---
+
+## Geographic depth vs global TAM
+
+**Deep fit** with a jurisdiction (e.g. **NAFDAC-aligned** workflows, local supply-chain language) wins **authority and national-program** conversations. For **global** buyers, frame that depth as **reference deployment and regulatory template**, not a hard ceiling: the same **authenticate → trace → enforce** stack and **documented portability** apply to **multi-region** rollouts; local copy can say **“proven regulatory depth, extensible to your markets.”**
+
+---
+
 ## Summary
 
 1. **Vendor relationship:** Strong **dependency** on Base44 for hosted services; **not** “all logic and data trapped in one vendor” — app and function code are in-repo, NFT data can be in **your** Postgres, entities are documented for export/migration planning.
 2. **Dual store:** **Optional** second database with a **documented authority split**, **idempotent upserts**, **explicit strict/non-strict failure behaviour**, and an implementation that matches the documented boundaries; extra reconciliation/queues are **enhancements**, not prerequisites for coherence.
+3. **AI trust:** See [`AI_COMPLIANCE_AND_TRUST.md`](./AI_COMPLIANCE_AND_TRUST.md) for model use, grounding, human-in-the-loop, and subprocessor framing.

@@ -41,15 +41,16 @@ export default function SectorsSection() {
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-16">
           <span className="text-xs font-medium text-emerald-400 tracking-widest uppercase">
-            Nigeria Deployment Fit
+            Sectors · Global categories, local regulatory depth
           </span>
           <h2 className="text-3xl sm:text-4xl font-bold text-white mt-3 mb-4">
             Built for Regulated Supply Chains
           </h2>
           <p className="text-gray-500 max-w-2xl mx-auto">
-            The strongest near-term fit is counterfeit-sensitive sectors where
-            anti-counterfeit control, partner accountability, and consumer trust
-            are commercially valuable.
+            These categories matter everywhere counterfeits and diversion hurt safety
+            and margin. Nigeria and NAFDAC-aligned workflows are our{" "}
+            <strong className="text-gray-400 font-semibold">reference depth</strong> — not a
+            ceiling on where the same architecture can deploy.
           </p>
         </div>
 

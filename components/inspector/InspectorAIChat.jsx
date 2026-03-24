@@ -152,7 +152,9 @@ export default function InspectorAIChat() {
           </div>
           <div>
             <p className="text-xs font-bold text-white">Inspector AI</p>
-            <p className="text-[9px] text-gray-500">Tool-routed data · Verified sources</p>
+            <p className="text-[9px] text-gray-500">
+              Tool-routed data · Citations checked · Not for auto-enforcement
+            </p>
           </div>
         </div>
         <button onClick={clearChat} aria-label="Clear chat"
@@ -208,7 +210,11 @@ export default function InspectorAIChat() {
             }
           </button>
         </div>
-        <p className="text-[9px] text-gray-700 mt-1.5 text-center">Press Enter to send · Shift+Enter for new line</p>
+        <p className="text-[9px] text-gray-600 mt-1.5 text-center leading-relaxed px-1">
+          Assistant only — verify critical actions in case tools. Questions may be processed
+          by the platform&apos;s AI provider per your org policy.
+        </p>
+        <p className="text-[9px] text-gray-700 mt-1 text-center">Press Enter to send · Shift+Enter for new line</p>
       </div>
     </div>
   );

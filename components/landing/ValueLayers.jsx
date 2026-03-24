@@ -45,8 +45,11 @@ export default function ValueLayers() {
             Four Layers of Protection
           </h2>
           <p className="text-gray-500 max-w-2xl mx-auto">
-            Not just tags — a complete enforcement infrastructure that moves NAFDAC
-            from reactive mop-up to targeted, evidence-led field action.
+            Infrastructure is the means;{" "}
+            <strong className="text-gray-400 font-semibold">proof</strong> is the sale — more
+            partners scanning, faster linkage from suspicious taps to seizures and holds,
+            and shorter recall cycles. Built to support evidence-led field action, including
+            NAFDAC-style enforcement programmes.
           </p>
         </div>
 
