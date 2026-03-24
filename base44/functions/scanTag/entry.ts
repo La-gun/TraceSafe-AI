@@ -8,6 +8,7 @@
  * chain history, and any active alerts.
  */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
+import { fetchNftRegistryByTagUid } from '../_shared/nftRegistrySync.ts';
 
 const ADVISORY_DISCLAIMER =
   'Advisory only — does not replace rule-based scan status. Use for triage and investigation priority.';
@@ -174,6 +175,13 @@ Deno.serve(async (req) => {
       rule_scan_status: scan_status,
     });
 
+    let nft_registry = null;
+    try {
+      nft_registry = await fetchNftRegistryByTagUid(tag_uid);
+    } catch {
+      nft_registry = null;
+    }
+
     return Response.json({
       found: true,
       status: scan_status,
@@ -183,6 +191,7 @@ Deno.serve(async (req) => {
       scan_event_id: scanEvent.id,
       chain_history: chainHistory,
       advisory_risk,
+      nft_registry,
     });
 
   } catch (error) {

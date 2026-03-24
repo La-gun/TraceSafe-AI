@@ -5,11 +5,24 @@ import ScanChart from "../components/dashboard/ScanChart";
 import AlertsFeed from "../components/dashboard/AlertsFeed";
 import RecentEvents from "../components/dashboard/RecentEvents";
 import RegionMap from "../components/dashboard/RegionMap";
+import CommissionTagPanel from "@/components/nft/CommissionTagPanel";
 import usePullToRefresh from "@/hooks/usePullToRefresh.jsx";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { base44 } from "@/lib/base44Client";
 
 export default function Dashboard() {
   const queryClient = useQueryClient();
+  const { data: adminGate } = useQuery({
+    queryKey: ["dashboard-admin-gate"],
+    queryFn: async () => {
+      try {
+        const user = await base44.auth.me();
+        return { user, ok: true };
+      } catch {
+        return { user: null, ok: false };
+      }
+    },
+  });
   const { containerRef, PullIndicator } = usePullToRefresh(
     () => queryClient.invalidateQueries()
   );
@@ -52,6 +65,8 @@ export default function Dashboard() {
               </div>
             ))}
           </div>
+
+          {adminGate?.user?.role === "admin" && <CommissionTagPanel />}
 
           {/* Stats */}
           <DashboardStats />

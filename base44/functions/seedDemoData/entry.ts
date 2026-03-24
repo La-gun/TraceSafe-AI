@@ -13,6 +13,7 @@
  *   forceTags?: boolean — re-upsert demo tags even if batch exists (default false)
  */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
+import { syncCommissionedTagToNftRegistry } from '../_shared/nftRegistrySync.ts';
 
 type BatchSeed = {
   batch_number: string;
@@ -191,6 +192,9 @@ Deno.serve(async (req) => {
       scan_events_created: 0,
       alerts_created: 0,
       consumer_reports_created: 0,
+      nft_registry_synced: 0,
+      nft_registry_skipped: 0,
+      nft_registry_failed: 0,
       errors: [] as string[],
     };
 
@@ -275,6 +279,22 @@ Deno.serve(async (req) => {
           anomaly_flags: [],
         });
         summary.scan_events_created++;
+
+        const nft = await syncCommissionedTagToNftRegistry({
+          tag_uid: t.tag_uid,
+          batch_number: t.batch_number,
+          product_name: t.product_name,
+          product_id: t.batch_number,
+          batch_id: batchId,
+          serial_number: t.tag_uid,
+          commissioning_location: t.commissioning_location || "Factory",
+        });
+        if ("skipped" in nft && nft.skipped) summary.nft_registry_skipped++;
+        else if ("ok" in nft && nft.ok) summary.nft_registry_synced++;
+        else if ("ok" in nft && !nft.ok) {
+          summary.nft_registry_failed++;
+          summary.errors.push(`NFT sync ${t.tag_uid}: ${nft.error}`);
+        }
       } catch (e) {
         summary.errors.push(`Tag ${t.tag_uid}: ${(e as Error).message}`);
       }

@@ -1,0 +1,25 @@
+# Local PostgreSQL for nft_registry schema (first boot runs SQL in order).
+# From this directory: docker compose up -d
+# Connection: postgres://tracesafe:tracesafe_dev@localhost:5433/nft_registry
+services:
+  nft-registry-db:
+    image: postgres:16-alpine
+    container_name: tracesafe-nft-registry
+    environment:
+      POSTGRES_USER: tracesafe
+      POSTGRES_PASSWORD: tracesafe_dev
+      POSTGRES_DB: nft_registry
+    ports:
+      - "5433:5432"
+    volumes:
+      - nft_registry_pgdata:/var/lib/postgresql/data
+      - ./postgres/001_schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
+      - ./postgres/002_triggers.sql:/docker-entrypoint-initdb.d/02_triggers.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tracesafe -d nft_registry"]
+      interval: 3s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  nft_registry_pgdata:

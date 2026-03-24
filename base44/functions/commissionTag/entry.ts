@@ -11,6 +11,7 @@
  * Admin-only.
  */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
+import { syncCommissionedTagToNftRegistry } from '../_shared/nftRegistrySync.ts';
 
 Deno.serve(async (req) => {
   try {
@@ -97,7 +98,40 @@ Deno.serve(async (req) => {
       }
     }
 
-    return Response.json({ success: true, tag_id: tag.id, tag_uid, serial_number });
+    const strictNft = Deno.env.get('NFT_REGISTRY_SYNC_STRICT') === 'true';
+    let nft_registry_sync:
+      | { skipped: true }
+      | { ok: true; sku_node_id: string; tag_instance_node_id: string }
+      | { ok: false; error: string };
+
+    try {
+      nft_registry_sync = await syncCommissionedTagToNftRegistry({
+        tag_uid,
+        batch_number,
+        product_name,
+        product_id,
+        batch_id,
+        serial_number,
+        commissioning_location,
+      });
+    } catch (e) {
+      nft_registry_sync = { ok: false, error: (e as Error).message };
+    }
+
+    if (strictNft && 'ok' in nft_registry_sync && nft_registry_sync.ok === false) {
+      return Response.json(
+        { error: 'NFT registry sync failed', nft_registry_sync },
+        { status: 502 },
+      );
+    }
+
+    return Response.json({
+      success: true,
+      tag_id: tag.id,
+      tag_uid,
+      serial_number,
+      nft_registry_sync,
+    });
 
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });

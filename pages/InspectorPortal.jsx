@@ -10,6 +10,7 @@ import useOfflineSync, { setCachedProduct } from "@/hooks/useOfflineSync";
 import OfflineBanner from "@/components/inspector/OfflineBanner";
 import OfflineDraftForm from "@/components/inspector/OfflineDraftForm";
 import InspectorAIChat from "@/components/inspector/InspectorAIChat";
+import NftRegistryScanPanel from "@/components/nft/NftRegistryScanPanel";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -212,6 +213,8 @@ export default function InspectorPortal() {
                             </div>
                           </div>
                         )}
+                        <NftRegistryScanPanel nft={scanResult.nft_registry} />
+
                         {scanResult.advisory_risk && (
                           <div className="rounded-xl border border-blue-500/20 bg-blue-500/5 px-3 py-2.5 space-y-1.5">
                             <p className="text-[10px] font-semibold uppercase tracking-wider text-blue-300/90">
