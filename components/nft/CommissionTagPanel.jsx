@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { base44 } from "@/lib/base44Client";
+import { invokeWithDemo } from "@/lib/demo/invokeWithDemo";
+import { demoCommissionTagResponse } from "@/lib/demo/fixtures";
 import { Button } from "@/components/ui/button";
 import { Loader2, Factory } from "lucide-react";
 
@@ -49,8 +50,7 @@ export default function CommissionTagPanel() {
         body.manufacturer_partner_id = form.manufacturer_partner_id.trim();
       }
 
-      const res = await base44.functions.invoke("commissionTag", body);
-      const data = res?.data ?? res;
+      const data = await invokeWithDemo("commissionTag", body, (b) => demoCommissionTagResponse(b));
       if (data?.error) {
         setError(data.error);
         setResult(data);
@@ -127,7 +127,7 @@ export default function CommissionTagPanel() {
           />
         </label>
         <label className="flex flex-col gap-1">
-          <span className="text-gray-500">Batch id (Base44)</span>
+          <span className="text-gray-500">Batch id (ops)</span>
           <input
             className="rounded-lg bg-[#0D1424] border border-white/[0.1] px-3 py-2 text-white font-mono text-[11px]"
             value={form.batch_id}
@@ -213,7 +213,7 @@ export default function CommissionTagPanel() {
         <div className="mt-3 text-[11px] rounded-lg border border-white/[0.08] bg-[#0D1424] px-3 py-2 text-gray-400 space-y-1">
           <p className="text-gray-300 font-medium">NFT registry sync</p>
           {"skipped" in sync && sync.skipped && (
-            <p>No <code className="text-gray-500">DATABASE_URL</code> — sync skipped (Base44 data still saved).</p>
+            <p>No <code className="text-gray-500">DATABASE_URL</code> — sync skipped (primary tag data still saved).</p>
           )}
           {"ok" in sync && sync.ok === true && (
             <p className="text-emerald-400/90">

@@ -5,7 +5,9 @@ import { BrowserRouter as Router, Route, Routes, useLocation, Navigate } from 'r
 import { AnimatePresence, motion } from 'framer-motion';
 import { Suspense, lazy } from 'react';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
+import { isPublicDemoMode } from '@/lib/demo/publicDemo';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
+import DemoBanner from '@/components/DemoBanner';
 import SafeContainer from './components/SafeContainer';
 import BottomNavigation from './components/BottomNavigation';
 import TopBar from './components/TopBar';
@@ -89,9 +91,10 @@ const AuthenticatedApp = () => {
   }
 
   if (authError) {
-    if (authError.type === 'user_not_registered') {
+    if (authError.type === 'user_not_registered' && !isPublicDemoMode()) {
       return <UserNotRegisteredError />;
-    } else if (authError.type === 'auth_required') {
+    }
+    if (authError.type === 'auth_required' && import.meta.env.VITE_REQUIRE_AUTH === 'true') {
       navigateToLogin();
       return null;
     }
@@ -99,6 +102,7 @@ const AuthenticatedApp = () => {
 
   return (
     <SafeContainer>
+      {isPublicDemoMode() && <DemoBanner />}
       <TopBar />
       <div className="flex-1 pb-[calc(56px+env(safe-area-inset-bottom))]">
         <AnimatedRoutes />

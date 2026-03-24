@@ -4,7 +4,7 @@
 -- Design goals:
 --   • Enterprise hierarchy: any depth parent → child (tenant → portfolio → collection → class → tag slot)
 --   • Dual truth: physical NFC UID + on-chain token identity (optional until minted)
---   • Product bridge: link SKUs / Base44 product_id to hierarchy nodes without duplicating ops data
+--   • Product bridge: link SKUs / platform product_id to hierarchy nodes without duplicating ops data
 --   • Auditability: immutable-style event log + metadata revisions for compliance & disputes
 
 CREATE SCHEMA IF NOT EXISTS nft_registry;
@@ -61,7 +61,7 @@ END $$;
 -- ---------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS nft_tenant (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  external_key    TEXT NOT NULL UNIQUE,  -- stable id from IdP / ERP / Base44 org slug
+  external_key    TEXT NOT NULL UNIQUE,  -- stable id from IdP / ERP / org slug
   display_name    TEXT NOT NULL,
   metadata        JSONB NOT NULL DEFAULT '{}',
   created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -128,10 +128,10 @@ CREATE INDEX IF NOT EXISTS idx_nft_token_tenant_state ON nft_token_record (tenan
 CREATE TABLE IF NOT EXISTS physical_tag_assignment (
   id                    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id             UUID NOT NULL REFERENCES nft_tenant (id) ON DELETE CASCADE,
-  tag_uid               TEXT NOT NULL,           -- matches Base44 TagRegistry.tag_uid
+  tag_uid               TEXT NOT NULL,           -- matches ops TagRegistry.tag_uid
   hierarchy_node_id     UUID NOT NULL REFERENCES nft_hierarchy_node (id) ON DELETE RESTRICT,
   batch_external_ref    TEXT,                    -- batch_number or batch UUID from ops DB
-  platform_product_id   TEXT,                    -- Base44 product_id / SKU id
+  platform_product_id   TEXT,                    -- ops product_id / SKU id
   serial_number         TEXT,
   commissioning_ref     TEXT,                    -- external commissioning job id
   status                TEXT NOT NULL DEFAULT 'inventory'
@@ -218,4 +218,4 @@ WITH RECURSIVE tree AS (
 SELECT * FROM tree;
 
 COMMENT ON SCHEMA nft_registry IS
-  'Separate NFT tag catalog: hierarchy, token binding, physical tags, and product links. Integrate with Base44 TagRegistry via tag_uid / product_id.';
+  'Separate NFT tag catalog: hierarchy, token binding, physical tags, and product links. Integrate with ops TagRegistry via tag_uid / product_id.';

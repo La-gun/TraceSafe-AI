@@ -1,6 +1,6 @@
-# Data layer (Base44)
+# Data layer
 
-This app does **not** use a checked-in SQL or SQLite database. **Base44** hosts your entities (tables), auth, and APIs. You define and migrate schemas in the [Base44](https://base44.com) builder; this repo holds **functions** under `base44/functions/` that read/write those entities.
+This app does **not** use a checked-in SQL or SQLite database for core operations. Your **hosted application backend** provides entities (tables), auth, and HTTP APIs. This repo holds **functions** under [`server/functions/`](../server/functions/) that read and write those entities.
 
 ## Entities used in code
 
@@ -18,13 +18,13 @@ This app does **not** use a checked-in SQL or SQLite database. **Base44** hosts 
 | `ContactLead` | Contact form |
 | `Partner` | Supply chain partners |
 
-Field names must match what you configure in Base44. If a `create()` fails after deploy, adjust the entity schema in the builder to include any missing fields.
+Field names must match what you configure in your backend. If a `create()` fails after deploy, adjust the entity schema or trim the payload in `entry.ts`.
 
 ## Seeding demo data
 
-Function: **`seedDemoData`** (`base44/functions/seedDemoData/entry.ts`, helpers in `demoDataset.ts`)
+Function: **`seedDemoData`** ([`server/functions/seedDemoData/entry.ts`](../server/functions/seedDemoData/entry.ts), helpers in `demoDataset.ts`)
 
-- **Who can run:** signed-in user with **`role === "admin"`** (set in Base44 for your admin user).
+- **Who can run:** signed-in user with **`role === "admin"`** (per your auth configuration).
 - **Idempotent:** skips batches/tags that already exist (use `forceTags: true` to replace the three canonical demo tags only). Extended rows use stable keys (`DEMO-TS26-*` batches, `NG-TG-D*` tags, `ALT-DEMO-V2-*`, `RPT-DEMO-V2-*`, `TRF-DEMO-V2-*`, `NG-DEMO-RPT-*`) so re-runs do not duplicate.
 
 ### Options (JSON body)
@@ -35,15 +35,15 @@ Function: **`seedDemoData`** (`base44/functions/seedDemoData/entry.ts`, helpers 
 | `forceTags` | `false` | Delete and recreate the three canonical demo tags (`NG-TG-00041872`, etc.). |
 | `fullLifecycleDemo` | `true` | If `true`, also creates **50** extra batches (`DEMO-TS26-0001`…), **55** item tags + **1** case + **3** child tags, **~130** scan events (commissioning + port/wholesale/retail/consumer/returns/seizure), **24** diversion alerts (state-level `detected_zone` for the risk heat map), **22** consumer reports (mixed `input_mode` and `incident_status`), **16** inspection reports with **`photo_urls`** (remote placeholder images), **10** partners, **18** custody transfers, **14** batch-status rows, and **3** aggregation links. Set to `false` for the smaller legacy seed only. |
 
-If a `create()` fails (unknown field on `Partner`, etc.), the function continues and records the error in `summary.errors`. Add the field in the Base44 builder or trim the payload in `entry.ts`.
+If a `create()` fails (unknown field on `Partner`, etc.), the function continues and records the error in `summary.errors`.
 
 ### From the browser (after admin login)
 
 ```js
-const { base44 } = await import('/src/lib/base44Client.js'); // path as in your app
-await base44.functions.invoke('seedDemoData', { dryRun: true });  // preview
-await base44.functions.invoke('seedDemoData', {});                // apply (full lifecycle by default)
-await base44.functions.invoke('seedDemoData', { fullLifecycleDemo: false }); // legacy-only
+const { backend } = await import('/src/lib/backendClient.js'); // re-exports @/lib/api
+await backend.functions.invoke('seedDemoData', { dryRun: true });  // preview
+await backend.functions.invoke('seedDemoData', {});                // apply (full lifecycle by default)
+await backend.functions.invoke('seedDemoData', { fullLifecycleDemo: false }); // legacy-only
 ```
 
 Or use the **Dev tools → Network** tab while triggering a small admin-only UI if you add one.
@@ -54,14 +54,14 @@ Signed-in users hit **`getDashboardStats`**, which powers the regulator **Dashbo
 
 ### Risk map & Incident Manager (entity ACL)
 
-Direct `base44.entities.*.list()` from the browser often returns **empty arrays** if your Base44 entity rules restrict reads. These functions use **`asServiceRole`** so signed-in users still receive data (same pattern as `getDashboardStats`):
+Direct `backend.entities.*.list()` from the browser often returns **empty arrays** if entity rules restrict reads. These functions use **`asServiceRole`** so signed-in users still receive data (same pattern as `getDashboardStats`):
 
 | Function | Used by | Returns |
 |----------|---------|---------|
 | **`getRiskMapData`** | `/RiskDashboard` | `{ batches, alerts }` |
 | **`listConsumerReports`** | `/IncidentManager` | `{ reports }` |
 
-Both require an authenticated session (`auth.me()`). Deploy the new function folders with your usual Base44 / Git sync flow.
+Both require an authenticated session (`auth.me()`). Deploy the function folders with your hosting workflow.
 
 ### Demo NFC UIDs (Inspector portal)
 
@@ -75,11 +75,14 @@ After seeding:
 
 ## Local env
 
-Point the app at your Base44 backend (see `README.md`):
+Point the Vite app at your API host (see `README.md`):
 
 ```env
-VITE_BASE44_APP_ID=...
-VITE_BASE44_APP_BASE_URL=https://your-app.base44.app
+VITE_APP_ID=...
+VITE_APP_API_BASE_URL=https://your-api-host
+
+# Legacy (still supported):
+# VITE_BASE44_APP_ID, VITE_BASE44_APP_BASE_URL
 ```
 
 ## Optimisations
@@ -92,7 +95,7 @@ VITE_BASE44_APP_BASE_URL=https://your-app.base44.app
 
 ## NFT tag registry (separate database)
 
-Operational NFC data stays in Base44 (`TagRegistry`, `AggregationLink`, `ScanEvent`). **NFT catalog, hierarchy, mint state, and bulk tag uploads** live in a **separate SQL database** so you can:
+Operational NFC data stays in the main entity store (`TagRegistry`, `AggregationLink`, `ScanEvent`). **NFT catalog, hierarchy, mint state, and bulk tag uploads** live in a **separate SQL database** so you can:
 
 - Version and govern NFT metadata independently of scan throughput
 - Attach **parent → child** enterprise structure (org → brand → SKU → collection → token class → physical tag)
@@ -110,24 +113,24 @@ Operational NFC data stays in Base44 (`TagRegistry`, `AggregationLink`, `ScanEve
 
 Apply order (Postgres): `001_schema.sql` then `002_triggers.sql`.
 
-**Bridge fields to Base44:** `physical_tag_assignment.tag_uid` ↔ `TagRegistry.tag_uid`; `platform_product_id` / `platform_product_catalog_link` ↔ `TagRegistry.product_id` (or your SKU id).
+**Bridge fields to ops entities:** `physical_tag_assignment.tag_uid` ↔ `TagRegistry.tag_uid`; `platform_product_id` / `platform_product_catalog_link` ↔ `TagRegistry.product_id` (or your SKU id).
 
 ### How this can enhance TraceSafe (beyond “another table”)
 
-1. **Dual verification** — Inspector flow can require agreement between Base44 scan state and NFT DB mint/binding state (catches “real NFC, wrong collection” or stale metadata).
+1. **Dual verification** — Inspector flow can require agreement between scan state in the ops store and NFT DB mint/binding state (catches “real NFC, wrong collection” or stale metadata).
 2. **Regulatory narrative** — Time-stamped metadata revisions give a defensible story for NAFDAC-style inquiries (“this batch pointed at revision 3 as of date X”).
 3. **Supply-chain NFT** — Parent/child mirrors pallets → cases → items; token records can anchor the **case** while physical rows anchor **each tap**.
-4. **Partner onboarding** — Tenants load tag CSVs into `physical_tag_assignment` (`status = inventory`) before commissioning hits Base44; ETL validates codes against hierarchy.
-5. **Analytics without touching ops DB** — Heavy joins on taxonomy + token lifecycle run on a read replica of the NFT DB, leaving Base44 entity APIs fast.
+4. **Partner onboarding** — Tenants load tag CSVs into `physical_tag_assignment` (`status = inventory`) before commissioning hits the ops store; ETL validates codes against hierarchy.
+5. **Analytics without touching ops DB** — Heavy joins on taxonomy + token lifecycle run on a read replica of the NFT DB, leaving entity APIs fast.
 6. **Future: consumer wallet claims** — `nft_token_record` is the natural place to track transfer/burn when you add consumer ownership.
 
-Integration pattern: event-driven sync (commission in Base44 → queue message → upsert NFT DB) or nightly reconciliation jobs; keep Base44 authoritative for **scans**, NFT DB authoritative for **taxonomy, mint, and marketing/legal metadata**.
+Integration pattern: event-driven sync (commission in ops store → queue message → upsert NFT DB) or nightly reconciliation jobs; keep the ops store authoritative for **scans**, NFT DB authoritative for **taxonomy, mint, and marketing/legal metadata**.
 
 For a **procurement-accurate** summary (dependency vs lock-in, optional single-store mode, idempotent upserts, `NFT_REGISTRY_SYNC_STRICT`), see [`ENTERPRISE_AND_PORTABILITY.md`](./ENTERPRISE_AND_PORTABILITY.md).
 
 ### Wired in this repo
 
-- **`commissionTag`** — after a successful Base44 write, calls `syncCommissionedTagToNftRegistry` (`base44/functions/_shared/nftRegistrySync.ts`). Response includes `nft_registry_sync` (`skipped` | `ok` | `ok: false` + error).
+- **`commissionTag`** — after a successful ops write, calls `syncCommissionedTagToNftRegistry` ([`server/functions/_shared/nftRegistrySync.ts`](../server/functions/_shared/nftRegistrySync.ts)). Response includes `nft_registry_sync` (`skipped` | `ok` | `ok: false` + error).
 - **`scanTag`** — when Postgres is configured, attaches `nft_registry` on successful lookups (hierarchy + optional on-chain fields).
 - **`seedDemoData`** — after each demo tag is created, runs the same sync; summary includes `nft_registry_synced` / `nft_registry_skipped` / `nft_registry_failed`.
 - **UI** — **Dashboard** (signed-in **admin**): `CommissionTagPanel` → `commissionTag`. **Inspector Portal** scan results: `NftRegistryScanPanel` when `nft_registry` is present.
@@ -142,28 +145,24 @@ For a **procurement-accurate** summary (dependency vs lock-in, optional single-s
    `cd database/nft-registry && docker compose up -d`  
    Connection string: `postgres://tracesafe:tracesafe_dev@localhost:5433/nft_registry`
 
-Deployed Base44 functions **cannot** use `localhost`; point secrets at a **hosted** Postgres (Neon, Supabase, RDS, etc.) or a tunnel.
+Deployed server functions **cannot** use raw `localhost` for consumers; point secrets at a **hosted** Postgres (Neon, Supabase, RDS, etc.) or a tunnel.
 
-### Base44 secrets (deploy)
+### Server function environment (deploy)
 
-Set via [Base44 secrets](https://docs.base44.com/developers/references/cli/commands/secrets-set) (available to functions as `Deno.env`). From the project root, after `npx base44 login` (or device flow):
-
-```bash
-npx base44 secrets set NFT_REGISTRY_DATABASE_URL="postgres://USER:PASSWORD@HOST:5432/nft_registry"
-npx base44 secrets set NFT_REGISTRY_TENANT_EXTERNAL_KEY=default NFT_REGISTRY_TENANT_DISPLAY_NAME="TraceSafe" NFT_REGISTRY_SYNC_STRICT=false
-```
-
-Or load several at once:
+Expose these to the Deno (or compatible) runtime that executes [`server/functions/`](../server/functions/) — exact mechanism depends on your host (dashboard env vars, `doppler`, etc.):
 
 ```bash
-npx base44 secrets set --env-file database/nft-registry/secrets.local.env
+NFT_REGISTRY_DATABASE_URL="postgres://USER:PASSWORD@HOST:5432/nft_registry"
+NFT_REGISTRY_TENANT_EXTERNAL_KEY=default NFT_REGISTRY_TENANT_DISPLAY_NAME="TraceSafe" NFT_REGISTRY_SYNC_STRICT=false
 ```
+
+Or load several at once from a file your host supports.
 
 (`secrets.example.env` is a template; copy it to `secrets.local.env`, set a real URL — `secrets.local.env` is gitignored.)
 
-| Secret | Purpose |
+| Variable | Purpose |
 |--------|---------|
 | `NFT_REGISTRY_DATABASE_URL` or `DATABASE_URL` | PostgreSQL connection string (schema `nft_registry` must exist — run `database/nft-registry/postgres/*.sql` or `apply-schema.ps1`). |
 | `NFT_REGISTRY_TENANT_EXTERNAL_KEY` | Optional; defaults to `default`. Stable tenant key in `nft_tenant.external_key`. |
 | `NFT_REGISTRY_TENANT_DISPLAY_NAME` | Optional display name for that tenant row. |
-| `NFT_REGISTRY_SYNC_STRICT` | If `true`, failed NFT sync causes **502** on `commissionTag` (Base44 tag row is already created). Default: non-strict (commission succeeds; check `nft_registry_sync`). |
+| `NFT_REGISTRY_SYNC_STRICT` | If `true`, failed NFT sync causes **502** on `commissionTag` (ops tag row may already exist). Default: non-strict (commission succeeds; check `nft_registry_sync`). |

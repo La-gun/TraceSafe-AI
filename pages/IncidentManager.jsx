@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { base44 } from "@/lib/base44Client";
+import { backend } from "@/lib/backendClient";
+import { invokeWithDemo } from "@/lib/demo/invokeWithDemo";
+import { DEMO_CONSUMER_REPORTS } from "@/lib/demo/fixtures";
+import { isPublicDemoMode } from "@/lib/demo/publicDemo";
 import Navbar from "../components/landing/Navbar";
 import { motion, AnimatePresence } from "framer-motion";
 import IncidentStats from "../components/incidents/IncidentStats";
@@ -22,9 +25,11 @@ export default function IncidentManager() {
   const { data: reports = [], isLoading, isError, error } = useQuery({
     queryKey: QUERY_KEY,
     queryFn: async () => {
-      const res = await base44.functions.invoke("listConsumerReports", { limit: 150 });
-      const d = res?.data ?? res;
-      if (d?.error) throw new Error(d.error);
+      const d = await invokeWithDemo(
+        "listConsumerReports",
+        { limit: 150 },
+        () => ({ reports: DEMO_CONSUMER_REPORTS }),
+      );
       return d.reports ?? [];
     },
     retry: 1,
@@ -32,7 +37,14 @@ export default function IncidentManager() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.ConsumerReport.update(id, data),
+    mutationFn: async ({ id, data }) => {
+      try {
+        return await backend.entities.ConsumerReport.update(id, data);
+      } catch (e) {
+        if (!isPublicDemoMode()) throw e;
+        return { id, ...data };
+      }
+    },
     onMutate: async ({ id, data }) => {
       await queryClient.cancelQueries({ queryKey: QUERY_KEY });
       const previous = queryClient.getQueryData(QUERY_KEY);

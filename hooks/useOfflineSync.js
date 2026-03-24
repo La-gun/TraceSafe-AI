@@ -9,7 +9,8 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { base44 } from "@/lib/base44Client";
+import { backend } from "@/lib/backendClient";
+import { isPublicDemoMode } from "@/lib/demo/publicDemo";
 
 const SCAN_CACHE_KEY  = "traceguard_scan_cache";
 const DRAFTS_KEY      = "traceguard_drafts";
@@ -73,7 +74,7 @@ function markDraftSynced(id) {
   writeLS(DRAFTS_KEY, updated);
 }
 
-/** Convert base64 data URL to File for Base44 UploadFile (Base44 requires file_urls, not raw data URLs) */
+/** Convert base64 data URL to File for UploadFile (backend expects file_urls, not raw data URLs) */
 function dataURLtoFile(dataUrl, filename = "photo.jpg") {
   const arr = dataUrl.split(",");
   const mimeMatch = arr[0].match(/:(.*?);/);
@@ -84,13 +85,16 @@ function dataURLtoFile(dataUrl, filename = "photo.jpg") {
   return new File([u8arr], filename, { type: mime });
 }
 
-/** Upload draft photos (data URLs) to Base44 and return file_urls. Skips items already URLs. */
-async function uploadDraftPhotos(base44Client, photoUrls) {
+/** Upload draft photos (data URLs) via backend storage and return file_urls. Skips items already URLs. */
+async function uploadDraftPhotos(apiClient, photoUrls) {
   if (!photoUrls?.length) return [];
+  const demos = isPublicDemoMode();
   const uploads = photoUrls.map((item, i) => {
     if (typeof item === "string" && item.startsWith("data:")) {
       const file = dataURLtoFile(item, `evidence-${i}.jpg`);
-      return base44Client.integrations.Core.UploadFile({ file }).then((r) => r.file_url);
+      return apiClient.integrations.Core.UploadFile({ file })
+        .then((r) => r.file_url)
+        .catch(() => (demos ? item : null));
     }
     return Promise.resolve(typeof item === "string" ? item : null);
   });
@@ -120,11 +124,15 @@ export default function useOfflineSync() {
 
     for (const draft of pending) {
       try {
-        // Base44 expects photo_urls from UploadFile, not base64 data URLs. Upload offline photos first.
+        // Backend expects photo_urls from UploadFile, not base64 data URLs. Upload offline photos first.
         const photoUrls = draft.formData?.photo_urls || [];
-        const uploadedPhotoUrls = await uploadDraftPhotos(base44, photoUrls);
+        const uploadedPhotoUrls = await uploadDraftPhotos(backend, photoUrls);
         const payload = { ...draft.formData, photo_urls: uploadedPhotoUrls };
-        await base44.entities.InspectionReport.create(payload);
+        try {
+          await backend.entities.InspectionReport.create(payload);
+        } catch (e) {
+          if (!isPublicDemoMode()) throw e;
+        }
         markDraftSynced(draft.id);
         syncedAny = true;
       } catch {

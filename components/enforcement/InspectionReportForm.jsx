@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { base44 } from "@/lib/base44Client";
+import { backend } from "@/lib/backendClient";
+import { isPublicDemoMode } from "@/lib/demo/publicDemo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -43,7 +44,14 @@ export default function InspectionReportForm({ prefillAlert, onClose, onSubmitte
   const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
 
   const submitMutation = useMutation({
-    mutationFn: (payload) => base44.entities.InspectionReport.create(payload),
+    mutationFn: async (payload) => {
+      try {
+        return await backend.entities.InspectionReport.create(payload);
+      } catch (e) {
+        if (!isPublicDemoMode()) throw e;
+        return { ...payload, id: `demo-${Date.now()}`, created_date: new Date().toISOString() };
+      }
+    },
     onMutate: async (payload) => {
       await qc.cancelQueries({ queryKey: REPORTS_QUERY_KEY });
       const previous = qc.getQueryData(REPORTS_QUERY_KEY);
@@ -67,8 +75,13 @@ export default function InspectionReportForm({ prefillAlert, onClose, onSubmitte
     setUploading(true);
     const urls = [];
     for (const file of files) {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      urls.push(file_url);
+      try {
+        const { file_url } = await backend.integrations.Core.UploadFile({ file });
+        urls.push(file_url);
+      } catch {
+        if (isPublicDemoMode()) urls.push(URL.createObjectURL(file));
+        else throw new Error("Upload failed");
+      }
     }
     setPhotos((prev) => [...prev, ...urls]);
     setUploading(false);

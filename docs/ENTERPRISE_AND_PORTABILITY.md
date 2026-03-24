@@ -4,46 +4,46 @@ This document **corrects** two common misconceptions about TraceSafe’s archite
 
 ---
 
-## Hosted backend (Base44) — dependency vs lock-in
+## Hosted backend — dependency vs lock-in
 
-**Accurate framing:** TraceSafe depends on **Base44** for hosted authentication, entity APIs, and execution of the functions in `base44/functions/`. That is a **real vendor dependency**, comparable to Firebase, Supabase, or another BaaS — not a bespoke black box that holds all of your logic.
+**Accurate framing:** TraceSafe targets a **hosted application backend** (authentication, entity APIs, and execution of the functions in `server/functions/`). That is a **real infrastructure dependency**, comparable to Firebase, Supabase, or another BaaS — not a bespoke black box that holds all of your logic.
 
 **What you actually own and can migrate:**
 
 | Asset | Where it lives |
 |--------|----------------|
 | Client app (routes, UI, state) | This repo |
-| Server behaviour (scan, commission, AI, seeds, etc.) | This repo (`base44/functions/*.ts`) |
+| Server behaviour (scan, commission, AI, seeds, etc.) | This repo (`server/functions/*.ts`) |
 | Domain entities and fields | Documented in [`DATABASE.md`](./DATABASE.md) for export/ETL or reimplementation |
 | NFT registry data (when enabled) | **PostgreSQL you provision** (connection string in your secrets — Neon, RDS, Supabase, etc.) |
 
-Business rules and integrations are **versioned in git**. Moving to another host means **replatforming** the same way any team would when changing backend vendors: rewire auth, replace entity APIs, and redeploy functions — not recovering logic from an opaque console.
+Business rules and integrations are **versioned in git** (e.g. on **GitHub**). Moving to another host means **replatforming** the same way any team would when changing backend vendors: rewire auth, replace entity APIs, and redeploy functions — not recovering logic from an opaque console.
 
-**Enterprise due diligence** should still include Base44 (or any vendor) **terms, regions, subprocessors, backup/export, and SLAs** — standard for SaaS/BaaS procurement. The earlier “lock-in” wording overstated the case: the risk is **managed-backend dependency**, mitigated by **source ownership**, **documented schemas**, and **optional Postgres under your account**.
+**Enterprise due diligence** should still include your hosting provider’s **terms, regions, subprocessors, backup/export, and SLAs** — standard for SaaS/BaaS procurement. The risk is **managed-backend dependency**, mitigated by **source ownership**, **documented schemas**, and **optional Postgres under your account**.
 
-**Reducing review friction (fair or not, it affects cycle time):** Lead with **what runs in your repo** (functions, rules, UI), **what Base44 provides** (auth, entity API, execution), and **what can live under your cloud** (NFT registry Postgres). Supply **entity/schema exports**, **diagrams**, and **alignment to patterns buyers already approve** (e.g. hosted Postgres in your account, secrets not in client bundles). For **AI**, use the procurement-aligned brief in [`AI_COMPLIANCE_AND_TRUST.md`](./AI_COMPLIANCE_AND_TRUST.md).
+**Reducing review friction (fair or not, it affects cycle time):** Lead with **what runs in your repo** (functions, rules, UI), **what the hosted backend provides** (auth, entity API, execution), and **what can live under your cloud** (NFT registry Postgres). Supply **entity/schema exports**, **diagrams**, and **alignment to patterns buyers already approve** (e.g. hosted Postgres in your account, secrets not in client bundles). For **AI**, use the procurement-aligned brief in [`AI_COMPLIANCE_AND_TRUST.md`](./AI_COMPLIANCE_AND_TRUST.md).
 
 ---
 
-## Base44 + NFT registry — split of concerns, not two chaotic sources of truth
+## Ops store + NFT registry — split of concerns, not two chaotic sources of truth
 
-**Accurate framing:** The optional **PostgreSQL NFT registry** is a **separate concern** (taxonomy, physical assignment, optional on-chain metadata), not a second copy of scan history fighting Base44.
+**Accurate framing:** The optional **PostgreSQL NFT registry** is a **separate concern** (taxonomy, physical assignment, optional on-chain metadata), not a second copy of scan history fighting your primary entity store.
 
 ### Single-store mode
 
-If `NFT_REGISTRY_DATABASE_URL` / `DATABASE_URL` is **not** set, NFT helpers **return `skipped` / `null`** (`base44/functions/_shared/nftRegistrySync.ts`). The product runs **Base44-only**. Dual-store is **opt-in**, not mandatory for every deployment.
+If `NFT_REGISTRY_DATABASE_URL` / `DATABASE_URL` is **not** set, NFT helpers **return `skipped` / `null`** ([`server/functions/_shared/nftRegistrySync.ts`](../server/functions/_shared/nftRegistrySync.ts)). The product runs with **ops entities only**. Dual-store is **opt-in**, not mandatory for every deployment.
 
 ### When Postgres is configured
 
-- **Commission:** After a successful Base44 write, `syncCommissionedTagToNftRegistry` runs in a **single transaction** with **`ON CONFLICT` upserts** on stable keys (`tag_uid`, `(tenant_id, code)`, etc.). **Retries are idempotent** at the database layer.
-- **Scans:** `scanTag` may **attach** `nft_registry` fields when present; **scan events and enforcement** remain driven by Base44 entities as documented in [`DATABASE.md`](./DATABASE.md).
-- **Failure handling:** `NFT_REGISTRY_SYNC_STRICT` (see [`DATABASE.md`](./DATABASE.md)) defines whether a failed NFT sync fails the HTTP response after the Base44 row already exists; the API surfaces `nft_registry_sync` so clients can observe outcomes.
+- **Commission:** After a successful ops write, `syncCommissionedTagToNftRegistry` runs in a **single transaction** with **`ON CONFLICT` upserts** on stable keys (`tag_uid`, `(tenant_id, code)`, etc.). **Retries are idempotent** at the database layer.
+- **Scans:** `scanTag` may **attach** `nft_registry` fields when present; **scan events and enforcement** remain driven by ops entities as documented in [`DATABASE.md`](./DATABASE.md).
+- **Failure handling:** `NFT_REGISTRY_SYNC_STRICT` (see [`DATABASE.md`](./DATABASE.md)) defines whether a failed NFT sync fails the HTTP response after the ops row already exists; the API surfaces `nft_registry_sync` so clients can observe outcomes.
 
 ### Reconciliation and queues
 
 [`DATABASE.md`](./DATABASE.md) describes **event-driven or scheduled reconciliation** as a **scaling/pattern** option for complex topologies. **This repo’s implemented path** is **inline sync on commission** plus **read-side enrichment on scan**, not a mandatory separate message bus. Adding nightly reconciliation or a queue is an **operational upgrade**, not proof that today’s design is undefined.
 
-**Monitoring** for production still belongs on both systems (Base44 dashboards + Postgres metrics/alerts) whenever the NFT DB is enabled — that is ordinary dual-system ops, not an unresolved architectural gap.
+**Monitoring** for production still belongs on both systems (API/host dashboards + Postgres metrics/alerts) whenever the NFT DB is enabled — that is ordinary dual-system ops, not an unresolved architectural gap.
 
 ---
 
@@ -96,6 +96,6 @@ Product and sales collateral should lead with **one or two quantified outcomes p
 
 ## Summary
 
-1. **Vendor relationship:** Strong **dependency** on Base44 for hosted services; **not** “all logic and data trapped in one vendor” — app and function code are in-repo, NFT data can be in **your** Postgres, entities are documented for export/migration planning.
+1. **Vendor relationship:** Strong **dependency** on your chosen hosted backend for live services; **not** “all logic and data trapped in one vendor” — app and function code are in-repo, NFT data can be in **your** Postgres, entities are documented for export/migration planning.
 2. **Dual store:** **Optional** second database with a **documented authority split**, **idempotent upserts**, **explicit strict/non-strict failure behaviour**, and an implementation that matches the documented boundaries; extra reconciliation/queues are **enhancements**, not prerequisites for coherence.
 3. **AI trust:** See [`AI_COMPLIANCE_AND_TRUST.md`](./AI_COMPLIANCE_AND_TRUST.md) for model use, grounding, human-in-the-loop, and subprocessor framing.

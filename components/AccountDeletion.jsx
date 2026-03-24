@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { base44 } from "@/lib/base44Client";
+import { backend } from "@/lib/backendClient";
+import { invokeWithDemo } from "@/lib/demo/invokeWithDemo";
 import { Trash2, AlertTriangle, Loader2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,9 +15,9 @@ export default function AccountDeletion() {
     if (confirmText !== "DELETE") return;
     setStep("deleting");
     try {
-      await base44.functions.invoke("deleteAccount", {});
+      await invokeWithDemo("deleteAccount", {}, () => ({ ok: true, demo: true }));
       setStep("done");
-      setTimeout(() => base44.auth.logout("/"), 2500);
+      setTimeout(() => backend.auth.logout("/"), 2500);
     } catch (err) {
       setErrorMsg(err?.message || "Deletion failed. Please contact support.");
       setStep("error");

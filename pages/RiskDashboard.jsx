@@ -8,7 +8,8 @@ import NigeriaHeatmap from "@/components/risk/NigeriaHeatmap";
 import DraftManager from "@/components/risk/DraftManager";
 import BatchDetailModal from "@/components/risk/BatchDetailModal";
 import usePullToRefresh from "@/hooks/usePullToRefresh.jsx";
-import { base44 } from "@/lib/base44Client";
+import { invokeWithDemo } from "@/lib/demo/invokeWithDemo";
+import { DEMO_RISK_MAP } from "@/lib/demo/fixtures";
 
 export default function RiskDashboard() {
   const [tab, setTab] = useState("heatmap");
@@ -25,18 +26,15 @@ export default function RiskDashboard() {
     refetch: refetchRisk,
   } = useQuery({
     queryKey: ["risk-map-data"],
-    queryFn: async () => {
-      const res = await base44.functions.invoke("getRiskMapData", {});
-      const d = res?.data ?? res;
-      if (d?.error) throw new Error(d.error);
-      return d;
-    },
-    retry: 1,
+    queryFn: async () =>
+      invokeWithDemo("getRiskMapData", {}, () => DEMO_RISK_MAP),
+    retry: 0,
     staleTime: 30_000,
   });
 
   const batches = riskPayload?.batches ?? [];
   const alerts = riskPayload?.alerts ?? [];
+  const usingDemoData = Boolean(riskPayload?._demo);
 
   const stats = useMemo(() => {
     const openAlerts = alerts.filter((a) => a.status === "open");
@@ -75,13 +73,17 @@ export default function RiskDashboard() {
                 Geospatial risk intelligence across Nigeria. Colour-coded by diversion score and alert frequency.
               </p>
               {isError && (
-                <p className="text-xs text-amber-400/90 mt-2 max-w-md">
-                  Sign in to load live batch and alert data, or check that the{" "}
-                  <code className="text-gray-400">getRiskMapData</code> function is deployed.{" "}
-                  {error?.message ? `(${error.message})` : ""}
+                <p className="text-xs text-red-400/90 mt-2 max-w-md">
+                  Could not load risk data. {error?.message ? `(${error.message})` : ""}
                 </p>
               )}
-              {!isLoading && !isError && batches.length === 0 && alerts.length === 0 && (
+              {!isLoading && !isError && usingDemoData && (
+                <p className="text-xs text-emerald-400/80 mt-2 max-w-md">
+                  Showing <strong>demo</strong> batches and alerts — connect your API and deploy{" "}
+                  <code className="text-gray-400">getRiskMapData</code> for live data.
+                </p>
+              )}
+              {!isLoading && !isError && !usingDemoData && batches.length === 0 && alerts.length === 0 && (
                 <p className="text-xs text-gray-500 mt-2 max-w-lg">
                   No batches or alerts in the workspace yet. As an admin, run{" "}
                   <code className="text-emerald-500/80">seedDemoData</code> (see docs/DATABASE.md) to load demo geography and diversion data.

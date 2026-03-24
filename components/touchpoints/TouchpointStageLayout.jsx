@@ -5,7 +5,7 @@ import Navbar from "@/components/landing/Navbar";
 import Footer from "@/components/landing/Footer";
 
 /**
- * Shared layout for supply-chain stage pages (mirrors verify-track-guard.base44.app touchpoints).
+ * Shared layout for supply-chain stage pages (TraceSafe touchpoint flows).
  */
 export default function TouchpointStageLayout({
   title,

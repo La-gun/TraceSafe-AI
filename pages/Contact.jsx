@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import Navbar from "../components/landing/Navbar";
 import Footer from "../components/landing/Footer";
-import { base44 } from "@/lib/base44Client";
+import { backend } from "@/lib/backendClient";
+import { isPublicDemoMode } from "@/lib/demo/publicDemo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -29,15 +30,26 @@ export default function Contact() {
   });
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [submitError, setSubmitError] = useState(null);
 
   const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    await base44.entities.ContactLead.create(form);
-    setSubmitted(true);
-    setLoading(false);
+    setSubmitError(null);
+    try {
+      await backend.entities.ContactLead.create(form);
+      setSubmitted(true);
+    } catch (err) {
+      if (isPublicDemoMode()) {
+        setSubmitted(true);
+      } else {
+        setSubmitError(err?.message || "Could not send message. Check your connection.");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -203,6 +215,12 @@ export default function Contact() {
                       placeholder="Tell us about your traceability needs..."
                     />
                   </div>
+
+                  {submitError ? (
+                    <p className="text-sm text-red-400" role="alert">
+                      {submitError}
+                    </p>
+                  ) : null}
 
                   <Button
                     type="submit"

@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
-import { base44 } from "@/lib/base44Client";
+import { invokeWithDemo } from "@/lib/demo/invokeWithDemo";
+import { demoInspectorAIResponse } from "@/lib/demo/fixtures";
 import { motion } from "framer-motion";
 import { Send, Loader2, Bot, User, Sparkles, RotateCcw } from "lucide-react";
 import ReactMarkdown from "react-markdown";
@@ -119,13 +120,17 @@ export default function InspectorAIChat() {
 
     const history = messages.filter(m => m.role !== "assistant" || messages.indexOf(m) > 0);
 
-    const response = await base44.functions.invoke("inspectorAI", {
-      question: q,
-      history: history.map(m => ({ role: m.role, content: m.content })),
-    });
+    const response = await invokeWithDemo(
+      "inspectorAI",
+      {
+        question: q,
+        history: history.map((m) => ({ role: m.role, content: m.content })),
+      },
+      (body) => demoInspectorAIResponse(body),
+    );
 
-    const answer = response.data?.answer || "Sorry, I couldn't retrieve an answer. Please try again.";
-    const citations = Array.isArray(response.data?.citations) ? response.data.citations : [];
+    const answer = response.answer || "Sorry, I couldn't retrieve an answer. Please try again.";
+    const citations = Array.isArray(response.citations) ? response.citations : [];
     setMessages(prev => [...prev, { role: "assistant", content: answer, citations, timestamp: timestamp() }]);
     setLoading(false);
   };

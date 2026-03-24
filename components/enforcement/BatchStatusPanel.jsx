@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { base44 } from "@/lib/base44Client";
+import { backend } from "@/lib/backendClient";
+import { isPublicDemoMode } from "@/lib/demo/publicDemo";
+import { DEMO_BATCH_STATUS_ROWS } from "@/lib/demo/fixtures";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Package, AlertTriangle, ShieldCheck, Clock, X, Loader2 } from "lucide-react";
@@ -34,7 +36,14 @@ function AddBatchModal({ onClose }) {
   });
 
   const addMutation = useMutation({
-    mutationFn: (data) => base44.entities.BatchStatus.create(data),
+    mutationFn: async (data) => {
+      try {
+        return await backend.entities.BatchStatus.create(data);
+      } catch (e) {
+        if (!isPublicDemoMode()) throw e;
+        return { ...data, id: `demo-${Date.now()}`, updated_date: new Date().toISOString() };
+      }
+    },
     // Optimistic: insert a temporary record immediately
     onMutate: async (newRecord) => {
       await qc.cancelQueries({ queryKey: QUERY_KEY });
@@ -123,7 +132,14 @@ function BatchCard({ batch }) {
   const [reason, setReason] = useState("");
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.BatchStatus.update(id, data),
+    mutationFn: async ({ id, data }) => {
+      try {
+        return await backend.entities.BatchStatus.update(id, data);
+      } catch (e) {
+        if (!isPublicDemoMode()) throw e;
+        return { id, ...data };
+      }
+    },
     // Optimistic: update the card in the list immediately
     onMutate: async ({ id, data }) => {
       await qc.cancelQueries({ queryKey: QUERY_KEY });
@@ -207,7 +223,14 @@ export default function BatchStatusPanel() {
 
   const { data: batches = [], isLoading } = useQuery({
     queryKey: QUERY_KEY,
-    queryFn: () => base44.entities.BatchStatus.list("-updated_date", 50),
+    queryFn: async () => {
+      try {
+        return await backend.entities.BatchStatus.list("-updated_date", 50);
+      } catch (e) {
+        if (!isPublicDemoMode()) throw e;
+        return DEMO_BATCH_STATUS_ROWS;
+      }
+    },
   });
 
   const filtered = filter === "all" ? batches : batches.filter((b) => b.status === filter);

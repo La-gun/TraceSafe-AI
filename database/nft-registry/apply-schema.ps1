@@ -34,5 +34,5 @@ Write-Host ""
 Write-Host "Local connection string:" -ForegroundColor Green
 Write-Host "  postgres://tracesafe:tracesafe_dev@localhost:5433/nft_registry"
 Write-Host ""
-Write-Host "Base44 cloud functions cannot reach localhost. Use this URL only with a tunnel" -ForegroundColor Yellow
+Write-Host "Deployed server functions cannot reach localhost. Use this URL only with a tunnel" -ForegroundColor Yellow
 Write-Host "or set secrets to a hosted DB (Neon, Supabase, RDS, etc.)." -ForegroundColor Yellow

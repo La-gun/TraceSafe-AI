@@ -24,4 +24,4 @@ docker exec tracesafe-nft-registry psql -U tracesafe -d nft_registry -c '\dn nft
 
 echo ""
 echo "Local: postgres://tracesafe:tracesafe_dev@localhost:5433/nft_registry"
-echo "Use a hosted Postgres URL in Base44 secrets for deployed functions."
+echo "Use a hosted Postgres URL in server function environment for deployed functions."

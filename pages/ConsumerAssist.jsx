@@ -1,5 +1,8 @@
 import React, { useState, useRef } from "react";
-import { base44 } from "@/lib/base44Client";
+import { backend } from "@/lib/backendClient";
+import { invokeWithDemo } from "@/lib/demo/invokeWithDemo";
+import { demoConsumerAssistResponse } from "@/lib/demo/fixtures";
+import { isPublicDemoMode } from "@/lib/demo/publicDemo";
 import Navbar from "../components/landing/Navbar";
 import Footer from "../components/landing/Footer";
 import { Button } from "@/components/ui/button";
@@ -211,40 +214,55 @@ export default function ConsumerAssist() {
 
     let imageUrl = null;
 
-    // Upload image first if in photo mode
     if (mode === "photo" && imageFile) {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file: imageFile });
-      imageUrl = file_url;
+      try {
+        const { file_url } = await backend.integrations.Core.UploadFile({ file: imageFile });
+        imageUrl = file_url;
+      } catch {
+        if (isPublicDemoMode() && imagePreview) imageUrl = imagePreview;
+        else {
+          setError("Could not upload image. Try serial mode or connect your API.");
+          setLoading(false);
+          return;
+        }
+      }
     }
 
-    const response = await base44.functions.invoke("consumerAssist", {
-      mode,
-      serial_number: mode === "serial" ? serial : undefined,
-      image_url: imageUrl,
-      phone_number: phone || undefined,
-    });
+    const response = await invokeWithDemo(
+      "consumerAssist",
+      {
+        mode,
+        serial_number: mode === "serial" ? serial : undefined,
+        image_url: imageUrl,
+        phone_number: phone || undefined,
+      },
+      (body) => demoConsumerAssistResponse(body),
+    );
 
-    if (response.data.success) {
-      setResult(response.data);
-      // Save a ConsumerReport record for regulator visibility (all non-authentic results)
-      const d = response.data;
+    if (response.success) {
+      setResult(response);
+      const d = response;
       if (d.status !== "authentic") {
-        base44.entities.ConsumerReport.create({
-          serial_number: d.resolved_serial,
-          product_name: d.product_name || null,
-          batch_number: d.batch || null,
-          manufacturer: d.manufacturer || null,
-          reported_status: d.status,
-          input_mode: mode,
-          reporter_phone: phone || null,
-          last_scan_location: d.last_scan_location || null,
-          supply_chain_stage: d.supply_chain_stage || null,
-          incident_status: "pending_review",
-          priority: ["recalled", "not_found"].includes(d.status) ? "high" : "medium",
-        });
+        try {
+          await backend.entities.ConsumerReport.create({
+            serial_number: d.resolved_serial,
+            product_name: d.product_name || null,
+            batch_number: d.batch || null,
+            manufacturer: d.manufacturer || null,
+            reported_status: d.status,
+            input_mode: mode,
+            reporter_phone: phone || null,
+            last_scan_location: d.last_scan_location || null,
+            supply_chain_stage: d.supply_chain_stage || null,
+            incident_status: "pending_review",
+            priority: ["recalled", "not_found"].includes(d.status) ? "high" : "medium",
+          });
+        } catch {
+          /* demo mode: entity API optional */
+        }
       }
     } else {
-      setError(response.data.error || "Verification failed. Please try again.");
+      setError(response.error || "Verification failed. Please try again.");
     }
     setLoading(false);
   };

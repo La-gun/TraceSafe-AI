@@ -8,7 +8,10 @@ import RegionMap from "../components/dashboard/RegionMap";
 import CommissionTagPanel from "@/components/nft/CommissionTagPanel";
 import usePullToRefresh from "@/hooks/usePullToRefresh.jsx";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { base44 } from "@/lib/base44Client";
+import { backend } from "@/lib/backendClient";
+import { invokeWithDemo } from "@/lib/demo/invokeWithDemo";
+import { DEMO_DASHBOARD_STATS } from "@/lib/demo/fixtures";
+import { isPublicDemoMode } from "@/lib/demo/publicDemo";
 
 const DASHBOARD_STATS_KEY = ["dashboard-stats"];
 
@@ -18,7 +21,7 @@ export default function Dashboard() {
     queryKey: ["dashboard-admin-gate"],
     queryFn: async () => {
       try {
-        const user = await base44.auth.me();
+        const user = await backend.auth.me();
         return { user, ok: true };
       } catch {
         return { user: null, ok: false };
@@ -26,17 +29,17 @@ export default function Dashboard() {
     },
   });
 
-  const { data: dashboardStats } = useQuery({
+  const { data: dashboardStatsRaw } = useQuery({
     queryKey: DASHBOARD_STATS_KEY,
-    queryFn: async () => {
-      const res = await base44.functions.invoke("getDashboardStats", {});
-      const data = res?.data ?? res;
-      if (data?.error) throw new Error(data.error);
-      return data;
-    },
-    enabled: Boolean(adminGate?.user),
+    queryFn: async () =>
+      invokeWithDemo("getDashboardStats", {}, () => DEMO_DASHBOARD_STATS),
+    enabled: Boolean(adminGate?.user) || isPublicDemoMode(),
     staleTime: 45_000,
   });
+
+  const dashboardStats = dashboardStatsRaw
+    ? Object.fromEntries(Object.entries(dashboardStatsRaw).filter(([k]) => k !== "_demo"))
+    : undefined;
 
   const { containerRef, PullIndicator } = usePullToRefresh(() =>
     Promise.all([
@@ -84,7 +87,7 @@ export default function Dashboard() {
             ))}
           </div>
 
-          {adminGate?.user?.role === "admin" && <CommissionTagPanel />}
+          {(adminGate?.user?.role === "admin" || isPublicDemoMode()) && <CommissionTagPanel />}
 
           {/* Stats */}
           <DashboardStats stats={dashboardStats} />

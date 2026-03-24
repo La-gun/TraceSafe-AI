@@ -3,7 +3,7 @@ import {
   INSPECTOR_QUESTION_MAX,
   sanitizeUntrustedInspectorText,
   wrapInspectorQuestion,
-} from '../base44/functions/inspectorAI/promptGuards.ts';
+} from '../server/functions/inspectorAI/promptGuards.ts';
 import attempts from './fixtures/injection-attempts.json';
 
 describe('prompt guards', () => {

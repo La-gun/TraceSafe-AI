@@ -1,5 +1,5 @@
 {
-  "name": "base44-app",
+  "name": "tracesafe-ai",
   "private": true,
   "version": "1.0.0",
   "type": "module",
@@ -17,8 +17,6 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@base44/sdk": "^0.8.21",
-    "@base44/vite-plugin": "^1.0.0",
     "@capacitor/android": "^7.6.0",
     "@capacitor/cli": "^7.6.0",
     "@capacitor/core": "^7.6.0",
@@ -56,6 +54,7 @@
     "@radix-ui/react-tooltip": "^1.1.8",
     "@stripe/react-stripe-js": "^3.0.0",
     "@stripe/stripe-js": "^5.2.0",
+    "@supabase/supabase-js": "^2.49.1",
     "@tanstack/react-query": "^5.84.1",
     "canvas-confetti": "^1.9.4",
     "class-variance-authority": "^0.7.1",
@@ -78,7 +77,6 @@
     "react-hot-toast": "^2.6.0",
     "react-leaflet": "^4.2.1",
     "react-markdown": "^9.0.1",
-    "react-quill": "^2.0.0",
     "react-resizable-panels": "^2.1.7",
     "react-router-dom": "^6.26.0",
     "recharts": "^2.15.4",

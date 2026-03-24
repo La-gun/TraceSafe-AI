@@ -3,7 +3,8 @@
  * Saves to localStorage as a draft when offline, submits directly when online.
  */
 import React, { useState } from "react";
-import { base44 } from "@/lib/base44Client";
+import { backend } from "@/lib/backendClient";
+import { isPublicDemoMode } from "@/lib/demo/publicDemo";
 import { saveDraft } from "@/hooks/useOfflineSync";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -77,14 +78,19 @@ export default function OfflineDraftForm({ prefillProduct, isOnline, onClose, on
 
     if (isOnline) {
       try {
-        await base44.entities.InspectionReport.create(payload);
+        await backend.entities.InspectionReport.create(payload);
         setStatus("saved_online");
         setTimeout(() => { onSaved?.(); onClose?.(); }, 1800);
       } catch {
-        saveDraft(form, photos);
-        onRefreshPending?.();
-        setStatus("saved_offline");
-        setTimeout(() => { onSaved?.(); onClose?.(); }, 2200);
+        if (isPublicDemoMode()) {
+          setStatus("saved_online");
+          setTimeout(() => { onSaved?.(); onClose?.(); }, 1800);
+        } else {
+          saveDraft(form, photos);
+          onRefreshPending?.();
+          setStatus("saved_offline");
+          setTimeout(() => { onSaved?.(); onClose?.(); }, 2200);
+        }
       }
     } else {
       saveDraft(form, photos);

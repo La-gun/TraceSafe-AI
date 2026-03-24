@@ -3,7 +3,7 @@ import {
   REGULATORY_CORPUS_IDS,
   retrieveRegulatoryChunks,
   slimRegulatoryRows,
-} from '../base44/functions/inspectorAI/regulatoryRag.ts';
+} from '../server/functions/inspectorAI/regulatoryRag.ts';
 import golden from './fixtures/retrieval-golden.json';
 
 describe('regulatory RAG retrieval', () => {

@@ -3,7 +3,8 @@
  * and allows manual retry or deletion of individual drafts.
  */
 import React, { useState, useEffect, useCallback } from "react";
-import { base44 } from "@/lib/base44Client";
+import { backend } from "@/lib/backendClient";
+import { isPublicDemoMode } from "@/lib/demo/publicDemo";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   CloudOff, Cloud, CheckCircle, RotateCcw, Trash2,
@@ -54,7 +55,11 @@ export default function DraftManager() {
     if (!isOnline || syncingId) return;
     setSyncingId(draft.id);
     try {
-      await base44.entities.InspectionReport.create(draft.formData);
+      try {
+        await backend.entities.InspectionReport.create(draft.formData);
+      } catch (e) {
+        if (!isPublicDemoMode()) throw e;
+      }
       markSynced(draft.id);
       setSyncedIds((p) => [...p, draft.id]);
       refresh();
@@ -69,7 +74,11 @@ export default function DraftManager() {
     setSyncingAll(true);
     for (const draft of pending) {
       try {
-        await base44.entities.InspectionReport.create(draft.formData);
+        try {
+          await backend.entities.InspectionReport.create(draft.formData);
+        } catch (e) {
+          if (!isPublicDemoMode()) throw e;
+        }
         markSynced(draft.id);
         setSyncedIds((p) => [...p, draft.id]);
       } catch {}

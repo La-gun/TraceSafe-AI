@@ -5,7 +5,8 @@ import {
   ArrowLeft, Smartphone, Sparkles, Loader2, CheckCircle, AlertTriangle,
   ShieldAlert, Package,
 } from "lucide-react";
-import { base44 } from "@/lib/base44Client";
+import { invokeWithDemo } from "@/lib/demo/invokeWithDemo";
+import { demoScanTagResponse } from "@/lib/demo/fixtures";
 import useOfflineSync, { setCachedProduct } from "@/hooks/useOfflineSync";
 import OfflineBanner from "@/components/inspector/OfflineBanner";
 import OfflineDraftForm from "@/components/inspector/OfflineDraftForm";
@@ -61,14 +62,17 @@ export default function InspectorPortal() {
     setScanError(null);
     setScanResult(null);
     try {
-      const res = await base44.functions.invoke("scanTag", {
-        tag_uid: uid,
-        event_type: "consumer_verification",
-        location: "Field Inspection — Demo",
-        state: "Lagos",
-        operator: "inspector_demo",
-      });
-      const data = res?.data ?? res;
+      const data = await invokeWithDemo(
+        "scanTag",
+        {
+          tag_uid: uid,
+          event_type: "consumer_verification",
+          location: "Field Inspection — Demo",
+          state: "Lagos",
+          operator: "inspector_demo",
+        },
+        (body) => demoScanTagResponse(body),
+      );
       setScanResult(data);
       const cachePayload = formatScanForCache(data);
       if (cachePayload) setCachedProduct(uid, cachePayload);

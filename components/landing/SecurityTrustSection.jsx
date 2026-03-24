@@ -196,7 +196,7 @@ export default function SecurityTrustSection() {
             <li className="text-gray-500 leading-relaxed">
               <span className="text-white font-medium block mb-1">Subprocessors &amp; retention</span>
               Inference runs via your hosted backend&apos;s LLM integration; align prompts,
-              logs, and regions with Base44 and your DPA.
+              logs, and regions with your infrastructure providers and DPA.
             </li>
             <li className="text-gray-500 leading-relaxed">
               <span className="text-white font-medium block mb-1">PII in prompts</span>
