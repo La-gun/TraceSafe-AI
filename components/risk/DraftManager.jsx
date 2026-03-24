@@ -4,11 +4,10 @@
  */
 import React, { useState, useEffect, useCallback } from "react";
 import { base44 } from "@/lib/base44Client";
-import { getPendingDrafts, saveDraft } from "@/hooks/useOfflineSync";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   CloudOff, Cloud, CheckCircle, RotateCcw, Trash2,
-  Loader2, Wifi, WifiOff, FileText, Plus, AlertTriangle,
+  Loader2, Wifi, WifiOff, FileText, AlertTriangle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";

@@ -1,5 +1,5 @@
 import React from "react";
-import { Factory, Ship, Warehouse, Store, User, ShieldCheck } from "lucide-react";
+import { Factory, Ship, Warehouse, Store, User } from "lucide-react";
 
 const eventTypeConfig = {
   commissioning: { icon: Factory, label: "Commissioned", color: "text-blue-400 bg-blue-500/10" },

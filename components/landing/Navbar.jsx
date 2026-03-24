@@ -8,6 +8,7 @@ export default function Navbar() {
 
   const links = [
     { label: "Platform", href: "#platform" },
+    { label: "Trust", href: "/Home#security-trust-heading" },
     { label: "Solutions", href: "/Solutions" },
     { label: "Dashboard", href: "/Dashboard" },
     { label: "Enforcement", href: "/Enforcement" },

@@ -45,6 +45,35 @@ If `NFT_REGISTRY_DATABASE_URL` / `DATABASE_URL` is **not** set, NFT helpers **re
 
 ---
 
+## Security & trust posture (NFC and location)
+
+**Procurement and communications should align claims with what the deployed stack proves.**
+
+### Known limitations
+
+| Topic | Limitation |
+|--------|------------|
+| **NFC / tags** | Plain NFC payloads can be copied. Secure tags (e.g. NTAG 424 DNA with SDM) **raise the cost** of forgery but are **not** an absolute “unclonable” guarantee against a determined attacker with lab time and budget. |
+| **Client-reported geography** | Latitude, longitude, or administrative region supplied by a browser or app **can be spoofed**. Such fields are useful for **analytics and triage**, not standalone **legal proof** of where a tap occurred unless corroborated. |
+
+### What this codebase already uses for decisions
+
+- **Server-authoritative registry:** Core verification (`scanTag` and related flows) resolves **tag and batch state** on the server; outcomes depend on **registered data and policy** (e.g. unknown tag, recall, expiry), not on the client’s opinion alone.
+- **Authenticated operators:** Inspector and partner workflows assume **signed-in users** so events can be tied to accounts for audit trails.
+- **Signals, not proof:** Zone rules and heat maps **consume supplied geography** as one input; **repeat-scan patterns** and **batch policy** add independent behavioural and registry signals.
+
+### Planned / roadmap mitigations (deployment-tunable)
+
+These are **intentional hardening levers** for enterprise rollouts; priority order should follow **threat model** and regulator expectations.
+
+1. **Cryptographic tap verification** — Server-side validation of **SDM or challenge–response** outputs so a tap must present a **fresh, key-backed** answer rather than replaying static NDEF.
+2. **Corroborated location trust** — Combine **coarse network-derived hints**, **trusted time**, and where appropriate **device integrity** (e.g. Play Integrity / App Attest) or **supervised field hardware** to increase confidence in geo signals.
+3. **Multi-source agreement** — Use **commissioning data**, optional **NFT-registry binding** (see [`DATABASE.md`](./DATABASE.md)), and **independent scanner corroboration** to flag **inconsistent or cloned** tag behaviour.
+
+**Marketing copy:** The public **Security & trust** section on the product home page summarises this for non-technical stakeholders; this section is the **procurement-accurate** counterpart.
+
+---
+
 ## Summary
 
 1. **Vendor relationship:** Strong **dependency** on Base44 for hosted services; **not** “all logic and data trapped in one vendor” — app and function code are in-repo, NFT data can be in **your** Postgres, entities are documented for export/migration planning.

@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { base44 } from "@/lib/base44Client";
-import { Button } from "@/components/ui/button";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { Send, Loader2, Bot, User, Sparkles, RotateCcw } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 

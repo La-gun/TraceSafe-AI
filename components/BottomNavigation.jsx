@@ -1,5 +1,5 @@
 import React from "react";
-import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Home, LayoutDashboard, Shield, Smartphone, Map } from "lucide-react";
 
 const NAV_ITEMS = [

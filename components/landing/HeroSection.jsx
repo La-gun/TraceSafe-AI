@@ -9,7 +9,7 @@ const THREE_LAYERS = [
     icon: ShieldCheck,
     step: "01",
     label: "Authenticate",
-    desc: "NTAG 424 DNA — unclonable, cryptographic product identity from factory floor to consumer tap.",
+    desc: "NTAG 424 DNA — cryptographic per-tap identity from factory to consumer; layered with server registry and anomaly signals (not “unclonable” magic).",
     color: "text-emerald-400",
     border: "border-emerald-500/20",
     bg: "bg-emerald-500/8",

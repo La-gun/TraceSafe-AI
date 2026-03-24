@@ -156,12 +156,12 @@ export default function useOfflineSync() {
     };
   }, [syncPendingDrafts]);
 
-  // Attempt sync on mount if online
+  // Sync when online (including initial mount if already connected)
   useEffect(() => {
     if (isOnline && getPendingDrafts().length > 0) {
       syncPendingDrafts();
     }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isOnline, syncPendingDrafts]);
 
   return {
     isOnline,

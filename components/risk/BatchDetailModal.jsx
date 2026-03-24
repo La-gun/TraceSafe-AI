@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { X, AlertTriangle, ShieldCheck, ShieldX, Clock, Package, TrendingUp, MapPin } from "lucide-react";
+import { X, AlertTriangle, ShieldCheck, ShieldX, MapPin } from "lucide-react";
 
 const STATUS_CFG = {
   recalled:   { icon: ShieldX,     color: "text-red-400",     bg: "bg-red-500/10 border-red-500/30",     label: "Recalled" },

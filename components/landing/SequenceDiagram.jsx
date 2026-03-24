@@ -4,7 +4,7 @@
  */
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Factory, Cloud, Brain, User, Ship, Warehouse, ChevronDown, ChevronUp } from "lucide-react";
+import { Factory, Cloud, Brain, User, Ship, ChevronDown, ChevronUp } from "lucide-react";
 
 const PARTICIPANTS = [
   { id: "factory",  label: "Factory",       sub: "Commissioning",   icon: Factory,   color: "text-teal-400",    ring: "border-teal-500/30",  bg: "bg-teal-500/10" },

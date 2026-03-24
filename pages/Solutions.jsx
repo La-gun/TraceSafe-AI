@@ -6,11 +6,11 @@ import Footer from "@/components/landing/Footer";
 const PILLARS = [
   {
     title: "NTAG 424 DNA Secure Identity",
-    body: "Every consumer unit gets a unique digital twin linked to a secure NTAG 424 DNA response. Supports item-level authenticity, repeat-scan intelligence, and anti-cloning detection — far harder to defeat than static labels or QR-only approaches.",
+    body: "Every consumer unit gets a unique digital twin tied to secure-tag capabilities. This materially raises the cost of forgery versus static labels or plain QR, especially when SDM responses are verified on the server. We still assume determined attackers—see Security & trust on the home page for limits and our mitigation roadmap.",
     caps: [
-      "Secure Dynamic Messaging (SDM) validation",
-      "Per-tap cryptographic authentication",
-      "Anti-cloning and replay detection",
+      "Secure Dynamic Messaging (SDM) validation (roadmap: server-verified taps)",
+      "Per-tap cryptographic authentication where enabled",
+      "Replay and anomaly signals via scan ledger and policy rules",
       "Key versioning and rotation management",
     ],
   },
@@ -26,10 +26,10 @@ const PILLARS = [
   },
   {
     title: "Anomaly Detection & Diversion Signals",
-    body: "Transform scan data into actionable intelligence. Suspicious-scan heat maps, repeat-scan alerts, geo-mismatch detection, and diversion signals help regulators target inspections instead of relying only on broad sweeps.",
+    body: "Transform scan data into actionable intelligence. Suspicious-scan heat maps, repeat-scan alerts, and zone or route signals (where geography is supplied) support triage. Client-reported location can be spoofed—we treat geo as one signal among many, not proof of physical presence without corroboration.",
     caps: [
       "Real-time scan anomaly scoring",
-      "Geographic diversion heat maps",
+      "Geographic diversion views (signal-based; corroboration on roadmap)",
       "Repeat-scan pattern detection",
       "Batch-level risk watchlists",
     ],

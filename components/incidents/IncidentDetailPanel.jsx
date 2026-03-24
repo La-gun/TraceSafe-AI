@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import MobileSelect from "@/components/ui/MobileSelect";
-import { X, Loader2, ShieldX, AlertTriangle, Search, CheckCircle, Ban, Clock } from "lucide-react";
+import { X, Loader2, ShieldX, AlertTriangle, Search, CheckCircle } from "lucide-react";
 import { format } from "date-fns";
 
 const INCIDENT_STATUS_OPTIONS = [

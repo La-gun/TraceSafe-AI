@@ -7,7 +7,7 @@ const layers = [
     icon: ShieldCheck,
     title: "Authentication",
     what: "Per-product authenticity check",
-    why: "Harder to clone than static labels or plain QR-only systems",
+    why: "Raises the bar versus static labels and QR-only links; strongest when combined with server checks and secure-tag crypto (see Security & trust).",
     color: "from-emerald-500 to-teal-500",
   },
   {
