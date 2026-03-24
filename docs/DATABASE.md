@@ -22,20 +22,35 @@ Field names must match what you configure in Base44. If a `create()` fails after
 
 ## Seeding demo data
 
-Function: **`seedDemoData`** (`base44/functions/seedDemoData/entry.ts`)
+Function: **`seedDemoData`** (`base44/functions/seedDemoData/entry.ts`, helpers in `demoDataset.ts`)
 
 - **Who can run:** signed-in user with **`role === "admin"`** (set in Base44 for your admin user).
-- **Idempotent:** skips batches/tags that already exist (use `forceTags: true` to replace demo tags only).
+- **Idempotent:** skips batches/tags that already exist (use `forceTags: true` to replace the three canonical demo tags only). Extended rows use stable keys (`DEMO-TS26-*` batches, `NG-TG-D*` tags, `ALT-DEMO-V2-*`, `RPT-DEMO-V2-*`, `TRF-DEMO-V2-*`, `NG-DEMO-RPT-*`) so re-runs do not duplicate.
+
+### Options (JSON body)
+
+| Field | Default | Meaning |
+|--------|---------|---------|
+| `dryRun` | `false` | If `true`, returns a plan and counts only. |
+| `forceTags` | `false` | Delete and recreate the three canonical demo tags (`NG-TG-00041872`, etc.). |
+| `fullLifecycleDemo` | `true` | If `true`, also creates **50** extra batches (`DEMO-TS26-0001`…), **55** item tags + **1** case + **3** child tags, **~130** scan events (commissioning + port/wholesale/retail/consumer/returns/seizure), **24** diversion alerts (state-level `detected_zone` for the risk heat map), **22** consumer reports (mixed `input_mode` and `incident_status`), **16** inspection reports with **`photo_urls`** (remote placeholder images), **10** partners, **18** custody transfers, **14** batch-status rows, and **3** aggregation links. Set to `false` for the smaller legacy seed only. |
+
+If a `create()` fails (unknown field on `Partner`, etc.), the function continues and records the error in `summary.errors`. Add the field in the Base44 builder or trim the payload in `entry.ts`.
 
 ### From the browser (after admin login)
 
 ```js
 const { base44 } = await import('/src/lib/base44Client.js'); // path as in your app
 await base44.functions.invoke('seedDemoData', { dryRun: true });  // preview
-await base44.functions.invoke('seedDemoData', {});                // apply
+await base44.functions.invoke('seedDemoData', {});                // apply (full lifecycle by default)
+await base44.functions.invoke('seedDemoData', { fullLifecycleDemo: false }); // legacy-only
 ```
 
 Or use the **Dev tools → Network** tab while triggering a small admin-only UI if you add one.
+
+### Dashboard after seeding
+
+Signed-in users hit **`getDashboardStats`**, which powers the regulator **Dashboard** charts and regional bars from real `ScanEvent` / `DiversionAlert` data once the seed has run.
 
 ### Demo NFC UIDs (Inspector portal)
 

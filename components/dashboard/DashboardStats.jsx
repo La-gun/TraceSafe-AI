@@ -1,7 +1,7 @@
 import React from "react";
 import { ShieldCheck, AlertTriangle, Scan, Package } from "lucide-react";
 
-const stats = [
+const FALLBACK_STATS = [
   {
     label: "Total Scans",
     value: "24,891",
@@ -32,10 +32,56 @@ const stats = [
   },
 ];
 
-export default function DashboardStats() {
+function fmt(n) {
+  if (n == null || Number.isNaN(n)) return "—";
+  return Number(n).toLocaleString();
+}
+
+export default function DashboardStats({ stats }) {
+  const live =
+    stats &&
+    typeof stats.total_scans === "number" &&
+    stats.total_scans + (stats.open_alerts ?? 0) >= 0;
+
+  const rows = live
+    ? [
+        {
+          label: "Total Scans",
+          value: fmt(stats.total_scans),
+          change: `${fmt(stats.authentic_scans)} authentic`,
+          positive: true,
+          icon: Scan,
+        },
+        {
+          label: "Authenticated",
+          value: fmt(stats.authentic_scans),
+          change:
+            stats.total_scans > 0
+              ? `${((100 * stats.authentic_scans) / stats.total_scans).toFixed(1)}%`
+              : "—",
+          positive: true,
+          icon: ShieldCheck,
+        },
+        {
+          label: "Suspicious",
+          value: fmt(stats.suspicious_scans),
+          change: `${fmt(stats.open_alerts)} open alerts`,
+          positive: stats.suspicious_scans === 0,
+          icon: AlertTriangle,
+        },
+        {
+          label: "Active Batches",
+          value: fmt(stats.active_batches),
+          change: `${fmt(stats.recalled_batches)} recalled`,
+          positive: stats.recalled_batches === 0,
+          icon: Package,
+        },
+      ]
+    : FALLBACK_STATS;
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      {stats.map((stat, i) => (
+      {rows.map((stat, i) => (
         <div
           key={i}
           className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5"

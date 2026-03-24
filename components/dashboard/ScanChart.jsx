@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import {
   AreaChart,
   Area,
@@ -8,7 +8,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-const data = [
+const FALLBACK_DATA = [
   { day: "Mon", authentic: 3200, suspicious: 12 },
   { day: "Tue", authentic: 3800, suspicious: 18 },
   { day: "Wed", authentic: 3100, suspicious: 8 },
@@ -31,13 +31,26 @@ const CustomTooltip = ({ active, payload, label }) => {
   return null;
 };
 
-export default function ScanChart() {
+export default function ScanChart({ scanByDay }) {
+  const data = useMemo(() => {
+    if (scanByDay?.length) {
+      return scanByDay.map((d) => ({
+        day: d.date,
+        authentic: d.authentic ?? 0,
+        suspicious: d.suspicious ?? 0,
+      }));
+    }
+    return FALLBACK_DATA;
+  }, [scanByDay]);
+
+  const source = scanByDay?.length ? "Backend (last 7 days)" : "Illustrative";
+
   return (
     <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-6">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h3 className="text-sm font-semibold text-white">Scan Activity</h3>
-          <p className="text-xs text-gray-500 mt-0.5">Last 7 days</p>
+          <p className="text-xs text-gray-500 mt-0.5">Last 7 days — {source}</p>
         </div>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1.5">

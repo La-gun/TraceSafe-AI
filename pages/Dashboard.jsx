@@ -10,6 +10,8 @@ import usePullToRefresh from "@/hooks/usePullToRefresh.jsx";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/lib/base44Client";
 
+const DASHBOARD_STATS_KEY = ["dashboard-stats"];
+
 export default function Dashboard() {
   const queryClient = useQueryClient();
   const { data: adminGate } = useQuery({
@@ -23,8 +25,24 @@ export default function Dashboard() {
       }
     },
   });
-  const { containerRef, PullIndicator } = usePullToRefresh(
-    () => queryClient.invalidateQueries()
+
+  const { data: dashboardStats } = useQuery({
+    queryKey: DASHBOARD_STATS_KEY,
+    queryFn: async () => {
+      const res = await base44.functions.invoke("getDashboardStats", {});
+      const data = res?.data ?? res;
+      if (data?.error) throw new Error(data.error);
+      return data;
+    },
+    enabled: Boolean(adminGate?.user),
+    staleTime: 45_000,
+  });
+
+  const { containerRef, PullIndicator } = usePullToRefresh(() =>
+    Promise.all([
+      queryClient.invalidateQueries(),
+      queryClient.invalidateQueries({ queryKey: DASHBOARD_STATS_KEY }),
+    ])
   );
 
   return (
@@ -69,21 +87,24 @@ export default function Dashboard() {
           {adminGate?.user?.role === "admin" && <CommissionTagPanel />}
 
           {/* Stats */}
-          <DashboardStats />
+          <DashboardStats stats={dashboardStats} />
 
           {/* Main grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-4">
             <div className="lg:col-span-2">
-              <ScanChart />
+              <ScanChart scanByDay={dashboardStats?.scan_by_day} />
             </div>
             <div>
-              <RegionMap />
+              <RegionMap
+                scanByState={dashboardStats?.scan_by_state}
+                suspiciousByState={dashboardStats?.suspicious_by_state}
+              />
             </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
-            <AlertsFeed />
-            <RecentEvents />
+            <AlertsFeed recentAlerts={dashboardStats?.recent_alerts} />
+            <RecentEvents recentEvents={dashboardStats?.recent_events} />
           </div>
         </div>
       </div>
