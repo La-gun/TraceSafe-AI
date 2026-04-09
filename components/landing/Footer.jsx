@@ -16,7 +16,19 @@ export default function Footer() {
             </span>
           </div>
 
-          <div className="flex items-center gap-6">
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
+            <Link to="/Trust" className="text-xs text-gray-500 hover:text-gray-300 transition-colors">
+              Trust
+            </Link>
+            <Link to="/Enterprise" className="text-xs text-gray-500 hover:text-gray-300 transition-colors">
+              Enterprise
+            </Link>
+            <Link to="/Sectors" className="text-xs text-gray-500 hover:text-gray-300 transition-colors">
+              Sectors
+            </Link>
+            <Link to="/GettingStarted" className="text-xs text-gray-500 hover:text-gray-300 transition-colors">
+              Getting started
+            </Link>
             <Link to="/Proof" className="text-xs text-gray-500 hover:text-gray-300 transition-colors">
               Outcomes
             </Link>

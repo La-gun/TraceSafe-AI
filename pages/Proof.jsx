@@ -61,11 +61,25 @@ export default function Proof() {
                 className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-5 sm:p-6"
               >
                 <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-2 mb-3">
-                  <h2 className="text-lg font-semibold text-white">{m.label}</h2>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h2 className="text-lg font-semibold text-white">{m.label}</h2>
+                    {m.verified ? (
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-emerald-400/90 bg-emerald-500/15 border border-emerald-500/25 px-2 py-0.5 rounded-full">
+                        Customer-verified
+                      </span>
+                    ) : (
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-600 bg-white/[0.04] border border-white/[0.08] px-2 py-0.5 rounded-full">
+                        Template
+                      </span>
+                    )}
+                  </div>
                   <p className="text-2xl font-bold text-emerald-400 tabular-nums shrink-0">
                     {m.heroValue}
                   </p>
                 </div>
+                {m.sourceNote && (
+                  <p className="text-xs text-emerald-400/80 mb-2">{m.sourceNote}</p>
+                )}
                 <p className="text-sm text-gray-400 leading-relaxed mb-3">{m.blurb}</p>
                 <p className="text-xs text-gray-500 leading-relaxed border-t border-white/[0.06] pt-3">
                   <span className="text-gray-600 font-medium uppercase tracking-wider text-[10px]">
@@ -78,9 +92,27 @@ export default function Proof() {
           </ul>
 
           <div className="mt-14 pt-10 border-t border-white/[0.06] text-center">
-            <p className="text-sm text-gray-500 mb-5">
+            <p className="text-sm text-gray-500 mb-4">
               Ready to map these to your deployment or pilot?
             </p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center items-center mb-5">
+              <Link to="/Trust">
+                <Button
+                  variant="outline"
+                  className="border-white/15 text-gray-200 hover:bg-white/[0.06] h-11 px-6 rounded-full w-full sm:w-auto"
+                >
+                  Trust center
+                </Button>
+              </Link>
+              <Link to="/Enterprise">
+                <Button
+                  variant="outline"
+                  className="border-white/15 text-gray-200 hover:bg-white/[0.06] h-11 px-6 rounded-full w-full sm:w-auto"
+                >
+                  Enterprise brief
+                </Button>
+              </Link>
+            </div>
             <Link to="/Contact">
               <Button className="bg-emerald-500 hover:bg-emerald-600 text-white h-11 px-8 rounded-full gap-2">
                 Book a demo

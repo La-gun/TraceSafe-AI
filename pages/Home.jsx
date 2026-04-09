@@ -7,6 +7,7 @@ import DigitalTwinPreview from "../components/landing/DigitalTwinPreview";
 import AnomalyIntelPreview from "../components/landing/AnomalyIntelPreview";
 import HowItWorks from "../components/landing/HowItWorks";
 import ValueLayers from "../components/landing/ValueLayers";
+import PersonaJourneys from "../components/landing/PersonaJourneys";
 import SecurityTrustSection from "../components/landing/SecurityTrustSection";
 import ArchitectureLayers from "../components/landing/ArchitectureLayers";
 import SectorsSection from "../components/landing/SectorsSection";
@@ -40,6 +41,7 @@ export default function Home() {
         <AnomalyIntelPreview />
         <HowItWorks />
         <ValueLayers />
+        <PersonaJourneys />
         <SecurityTrustSection />
         <ArchitectureLayers />
         <SectorsSection />

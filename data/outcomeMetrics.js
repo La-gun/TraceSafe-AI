@@ -8,7 +8,17 @@
 export const OUTCOME_METRICS_DISCLAIMER =
   "Figures are illustrative design targets and ranges — not verified customer benchmarks unless you update this file and your legal review.";
 
-/** @typedef {{ id: string; heroValue: string; label: string; blurb: string; detail: string }} OutcomeMetric */
+/**
+ * @typedef {{
+ *   id: string;
+ *   heroValue: string;
+ *   label: string;
+ *   blurb: string;
+ *   detail: string;
+ *   verified?: boolean;
+ *   sourceNote?: string | null;
+ * }} OutcomeMetric
+ */
 
 /** @type {OutcomeMetric[]} */
 export const OUTCOME_METRICS = [
@@ -19,6 +29,8 @@ export const OUTCOME_METRICS = [
     blurb: "Illustrative active footprint at programme maturity (partners, outlets, or depots — define “active” in your methodology).",
     detail:
       "Swap in anonymised roll-ups: e.g. distinct partners with ≥1 scan in 30 days, SKUs under serialisation, or states with live coverage. Keep numerator/denominator stable quarter to quarter for credibility.",
+    verified: false,
+    sourceNote: null,
   },
   {
     id: "alert_to_action",
@@ -27,6 +39,8 @@ export const OUTCOME_METRICS = [
     blurb: "Design-time band from high-confidence diversion signal to first documented inspector action, hold, or seizure linkage.",
     detail:
       "Measure from alert creation timestamp to first linked InspectionReport, batch enforcement status change, or external case reference. Tune the hour range to your jurisdiction and staffing model.",
+    verified: false,
+    sourceNote: null,
   },
   {
     id: "recall_clock",
@@ -35,6 +49,8 @@ export const OUTCOME_METRICS = [
     blurb: "Recall-readiness window from confirmed risk to regulator / partner / public notification — product class and law dependent.",
     detail:
       "Define “detect” (lab confirm, policy trigger, or mass scan pattern) and “visibility” (formal filing, partner broadcast, consumer channel). Align wording with counsel before publishing customer claims.",
+    verified: false,
+    sourceNote: null,
   },
   {
     id: "case_linkage",
@@ -43,6 +59,8 @@ export const OUTCOME_METRICS = [
     blurb: "Target share of critical alerts carrying inspection id, seizure reference, or formal case metadata.",
     detail:
       "Numerator: alerts above your severity threshold with at least one enforcement artefact. Denominator: same threshold population. Replace ranges with audited percentages when programmes allow disclosure.",
+    verified: false,
+    sourceNote: null,
   },
 ];
 

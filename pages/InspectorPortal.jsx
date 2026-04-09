@@ -11,6 +11,7 @@ import useOfflineSync, { setCachedProduct } from "@/hooks/useOfflineSync";
 import OfflineBanner from "@/components/inspector/OfflineBanner";
 import OfflineDraftForm from "@/components/inspector/OfflineDraftForm";
 import InspectorAIChat from "@/components/inspector/InspectorAIChat";
+import AiGovernanceStrip from "@/components/inspector/AiGovernanceStrip";
 import NftRegistryScanPanel from "@/components/nft/NftRegistryScanPanel";
 import { Button } from "@/components/ui/button";
 import {
@@ -282,6 +283,7 @@ export default function InspectorPortal() {
           </div>
         ) : (
           <div className="flex-1 min-h-[70vh] flex flex-col border-t border-white/[0.06]">
+            <AiGovernanceStrip />
             <InspectorAIChat />
           </div>
         )}

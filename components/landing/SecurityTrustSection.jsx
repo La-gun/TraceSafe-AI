@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   ShieldAlert,
@@ -8,57 +9,16 @@ import {
   Lock,
   ClipboardCheck,
 } from "lucide-react";
+import {
+  TRUST_LIMITS,
+  TRUST_TODAY,
+  TRUST_ROADMAP,
+  AI_GOVERNANCE_ITEMS,
+} from "@/data/securityTrustContent";
 
-const LIMITS = [
-  {
-    icon: ShieldAlert,
-    title: "Tag copying and replay",
-    honest:
-      "Standard NFC can be copied; even secure tags raise the bar but are not a magic “unclonable” guarantee against determined attackers.",
-  },
-  {
-    icon: MapPin,
-    title: "Client-reported location",
-    honest:
-      "Latitude, longitude, or “state” from a phone or browser can be spoofed. They are useful signals for analytics—not standalone proof of physical presence.",
-  },
-];
-
-const TODAY = [
-  {
-    icon: Server,
-    title: "Authoritative registry & ledger",
-    text: "Scans are evaluated against the live tag and batch record on the server. Unregistered tags, recalls, expiry, and policy state drive outcomes—not the sticker alone.",
-  },
-  {
-    icon: ClipboardCheck,
-    title: "Authenticated operators",
-    text: "Inspector and partner flows require signed-in users so scan and inspection events tie to an account for audit and case work.",
-  },
-  {
-    icon: Radar,
-    title: "Behavioural and policy signals",
-    text: "Repeat scans, suspicious patterns, and zone rules (where geography is supplied) feed diversion intelligence. We treat these as triage signals, not court-grade geolocation proof.",
-  },
-];
-
-const ROADMAP = [
-  {
-    icon: Lock,
-    title: "Cryptographic tap verification",
-    text: "Server-side validation of secure-tag responses (e.g. SDM / challenge–response) so taps must prove fresh, key-backed answers—not just replay static NDEF.",
-  },
-  {
-    icon: MapPin,
-    title: "Corroborated location trust",
-    text: "Fuse coarse network hints, trusted time, and—where appropriate—device integrity (Play Integrity / App Attest) and supervised inspector hardware to raise confidence in geo signals.",
-  },
-  {
-    icon: ShieldAlert,
-    title: "Multi-source agreement",
-    text: "Optional alignment between commissioning data, optional NFT-registry binding, and independent scanner corroboration to flag cloned or inconsistent tags.",
-  },
-];
+const LIMIT_ICONS = [ShieldAlert, MapPin];
+const TODAY_ICONS = [Server, ClipboardCheck, Radar];
+const ROADMAP_ICONS = [Lock, MapPin, ShieldAlert];
 
 export default function SecurityTrustSection() {
   return (
@@ -80,7 +40,12 @@ export default function SecurityTrustSection() {
           <p className="text-gray-500 max-w-2xl mx-auto text-sm sm:text-base leading-relaxed">
             TraceSafe is stronger than static QR-only labelling, but no field system should
             overclaim. Below is what we acknowledge, what the stack already uses for
-            decisions today, and how we plan to harden trust over time.
+            decisions today, and how we plan to harden trust over time. For a printable
+            procurement view, see{" "}
+            <Link to="/Trust" className="text-emerald-400/90 hover:text-emerald-300 underline underline-offset-2">
+              Trust center
+            </Link>
+            .
           </p>
         </div>
 
@@ -96,20 +61,23 @@ export default function SecurityTrustSection() {
               What we do not claim
             </h3>
             <ul className="space-y-5">
-              {LIMITS.map((item) => (
-                <li key={item.title} className="flex gap-3">
-                  <item.icon
-                    className="w-5 h-5 text-amber-400/80 shrink-0 mt-0.5"
-                    aria-hidden
-                  />
-                  <div>
-                    <p className="text-white text-sm font-medium">{item.title}</p>
-                    <p className="text-gray-500 text-xs leading-relaxed mt-1">
-                      {item.honest}
-                    </p>
-                  </div>
-                </li>
-              ))}
+              {TRUST_LIMITS.map((item, i) => {
+                const Icon = LIMIT_ICONS[i];
+                return (
+                  <li key={item.title} className="flex gap-3">
+                    <Icon
+                      className="w-5 h-5 text-amber-400/80 shrink-0 mt-0.5"
+                      aria-hidden
+                    />
+                    <div>
+                      <p className="text-white text-sm font-medium">{item.title}</p>
+                      <p className="text-gray-500 text-xs leading-relaxed mt-1">
+                        {item.honest}
+                      </p>
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
           </motion.div>
 
@@ -124,15 +92,18 @@ export default function SecurityTrustSection() {
               What the platform already enforces
             </h3>
             <ul className="grid sm:grid-cols-3 gap-6">
-              {TODAY.map((item) => (
-                <li key={item.title} className="flex flex-col gap-2">
-                  <div className="flex items-center gap-2">
-                    <item.icon className="w-5 h-5 text-emerald-400/80 shrink-0" aria-hidden />
-                    <p className="text-white text-sm font-medium leading-snug">{item.title}</p>
-                  </div>
-                  <p className="text-gray-500 text-xs leading-relaxed">{item.text}</p>
-                </li>
-              ))}
+              {TRUST_TODAY.map((item, i) => {
+                const Icon = TODAY_ICONS[i];
+                return (
+                  <li key={item.title} className="flex flex-col gap-2">
+                    <div className="flex items-center gap-2">
+                      <Icon className="w-5 h-5 text-emerald-400/80 shrink-0" aria-hidden />
+                      <p className="text-white text-sm font-medium leading-snug">{item.title}</p>
+                    </div>
+                    <p className="text-gray-500 text-xs leading-relaxed">{item.text}</p>
+                  </li>
+                );
+              })}
             </ul>
           </motion.div>
         </div>
@@ -152,18 +123,21 @@ export default function SecurityTrustSection() {
             regulator-grade assurance. Priorities can be tuned per deployment and threat model.
           </p>
           <ul className="grid md:grid-cols-3 gap-6">
-            {ROADMAP.map((item) => (
-              <li key={item.title} className="flex gap-3">
-                <item.icon
-                  className="w-5 h-5 text-cyan-400/70 shrink-0 mt-0.5"
-                  aria-hidden
-                />
-                <div>
-                  <p className="text-white text-sm font-medium">{item.title}</p>
-                  <p className="text-gray-500 text-xs leading-relaxed mt-1">{item.text}</p>
-                </div>
-              </li>
-            ))}
+            {TRUST_ROADMAP.map((item, i) => {
+              const Icon = ROADMAP_ICONS[i];
+              return (
+                <li key={item.title} className="flex gap-3">
+                  <Icon
+                    className="w-5 h-5 text-cyan-400/70 shrink-0 mt-0.5"
+                    aria-hidden
+                  />
+                  <div>
+                    <p className="text-white text-sm font-medium">{item.title}</p>
+                    <p className="text-gray-500 text-xs leading-relaxed mt-1">{item.text}</p>
+                  </div>
+                </li>
+              );
+            })}
           </ul>
         </motion.div>
 
@@ -180,29 +154,20 @@ export default function SecurityTrustSection() {
           <p className="text-gray-500 text-xs sm:text-sm mb-5 max-w-3xl">
             For security questionnaires: models assist with retrieval and wording; they do
             not replace your enforcement decisions. Technical detail for procurement lives
-            in <code className="text-gray-400 text-[11px]">docs/AI_COMPLIANCE_AND_TRUST.md</code>.
+            in <code className="text-gray-400 text-[11px]">docs/AI_COMPLIANCE_AND_TRUST.md</code>{" "}
+            and the{" "}
+            <Link to="/Trust" className="text-violet-300/90 hover:text-violet-200 underline underline-offset-2">
+              Trust center
+            </Link>
+            .
           </p>
           <ul className="grid sm:grid-cols-2 gap-5 text-xs sm:text-sm">
-            <li className="text-gray-500 leading-relaxed">
-              <span className="text-white font-medium block mb-1">Grounding</span>
-              Inspector answers use server-queried records only; citations are checked
-              against retrieved data.
-            </li>
-            <li className="text-gray-500 leading-relaxed">
-              <span className="text-white font-medium block mb-1">Human-in-the-loop</span>
-              Holds, recalls, and case resolution stay with signed-in people and workflows —
-              the assistant does not auto-execute enforcement.
-            </li>
-            <li className="text-gray-500 leading-relaxed">
-              <span className="text-white font-medium block mb-1">Subprocessors &amp; retention</span>
-              Inference runs via your hosted backend&apos;s LLM integration; align prompts,
-              logs, and regions with your infrastructure providers and DPA.
-            </li>
-            <li className="text-gray-500 leading-relaxed">
-              <span className="text-white font-medium block mb-1">PII in prompts</span>
-              Chat and slim row payloads may include fields from your data model; treat
-              questions like any sensitive channel and define org policy.
-            </li>
+            {AI_GOVERNANCE_ITEMS.map((item) => (
+              <li key={item.title} className="text-gray-500 leading-relaxed">
+                <span className="text-white font-medium block mb-1">{item.title}</span>
+                {item.body}
+              </li>
+            ))}
           </ul>
         </motion.div>
       </div>

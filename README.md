@@ -6,7 +6,7 @@ This repository is the **source of truth** for the web app and **server function
 
 For portability, dual-store behaviour, and procurement positioning, see **[`docs/ENTERPRISE_AND_PORTABILITY.md`](docs/ENTERPRISE_AND_PORTABILITY.md)**. For **AI** (Inspector assistant, optional vision assist, advisory signals), see **[`docs/AI_COMPLIANCE_AND_TRUST.md`](docs/AI_COMPLIANCE_AND_TRUST.md)**.
 
-**Marketing metrics (placeholders):** Illustrative design targets for the home hero and the **`/Proof`** one-pager ([`pages/Proof.jsx`](pages/Proof.jsx)) come from **[`data/outcomeMetrics.js`](data/outcomeMetrics.js)** — edit that file (and `HERO_METRIC_IDS` if you change which tiles appear) when you publish real customer-approved numbers.
+**Marketing metrics (placeholders):** Illustrative design targets for the home hero and the **`/Proof`** one-pager ([`pages/Proof.jsx`](pages/Proof.jsx)) come from **[`data/outcomeMetrics.js`](data/outcomeMetrics.js)** — edit that file (and `HERO_METRIC_IDS` if you change which tiles appear) when you publish real customer-approved numbers. Additional public pages: **`/Trust`** (trust center), **`/Enterprise`** (portability / procurement summary), **`/Sectors`**, **`/GettingStarted`** (first-scan checklist).
 
 ---
 

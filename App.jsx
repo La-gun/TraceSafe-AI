@@ -33,6 +33,10 @@ const ConsumerAssist     = lazy(() => import('./pages/ConsumerAssist'));
 const IncidentManager    = lazy(() => import('./pages/IncidentManager'));
 const RiskDashboard      = lazy(() => import('./pages/RiskDashboard'));
 const Proof              = lazy(() => import('./pages/Proof'));
+const TrustCenter        = lazy(() => import('./pages/TrustCenter'));
+const Enterprise         = lazy(() => import('./pages/Enterprise'));
+const SectorsPage        = lazy(() => import('./pages/Sectors'));
+const GettingStarted     = lazy(() => import('./pages/GettingStarted'));
 
 // Shared route-level fallback spinner
 const RouteFallback = () => (
@@ -65,6 +69,10 @@ const AnimatedRoutes = () => {
           <Route path="/Dashboard"                     element={<PageTransition><Dashboard /></PageTransition>} />
           <Route path="/Contact"                       element={<PageTransition><Contact /></PageTransition>} />
           <Route path="/Proof"                         element={<PageTransition><Proof /></PageTransition>} />
+          <Route path="/Trust"                         element={<PageTransition><TrustCenter /></PageTransition>} />
+          <Route path="/Enterprise"                    element={<PageTransition><Enterprise /></PageTransition>} />
+          <Route path="/Sectors"                       element={<PageTransition><SectorsPage /></PageTransition>} />
+          <Route path="/GettingStarted"                element={<PageTransition><GettingStarted /></PageTransition>} />
           <Route path="/Settings"                      element={<PageTransition><Settings /></PageTransition>} />
           <Route path="/touchpoints/manufacture"       element={<PageTransition><Manufacture /></PageTransition>} />
           <Route path="/touchpoints/port-of-entry"     element={<PageTransition><PortOfEntry /></PageTransition>} />

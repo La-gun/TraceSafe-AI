@@ -1,39 +1,10 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Pill, Wine, Wheat, Cpu, Package } from "lucide-react";
+import { SECTORS } from "@/data/sectors";
 
-const sectors = [
-  {
-    icon: Pill,
-    name: "Pharmaceuticals",
-    desc: "Anchor sector — traceability aligns with NAFDAC's regulatory direction for end-to-end supply chain visibility.",
-    tag: "Primary",
-  },
-  {
-    icon: Package,
-    name: "Premium FMCG",
-    desc: "Anti-counterfeit control for premium consumer goods where brand trust is commercially critical.",
-    tag: "High Value",
-  },
-  {
-    icon: Wine,
-    name: "Alcohol & Beverages",
-    desc: "Channel assurance for spirits and regulated beverages with import verification.",
-    tag: "Regulated",
-  },
-  {
-    icon: Wheat,
-    name: "Agro-Inputs",
-    desc: "Fertilizers, pesticides, and seeds where product authenticity protects farmer livelihoods.",
-    tag: "Essential",
-  },
-  {
-    icon: Cpu,
-    name: "High-Value Electronics",
-    desc: "Serialised authentication for electronics where counterfeits pose safety and quality risks.",
-    tag: "Technical",
-  },
-];
+const ICON_MAP = { Pill, Wine, Wheat, Cpu, Package };
 
 export default function SectorsSection() {
   return (
@@ -52,30 +23,47 @@ export default function SectorsSection() {
             <strong className="text-gray-400 font-semibold">reference depth</strong> — not a
             ceiling on where the same architecture can deploy.
           </p>
+          <p className="mt-4">
+            <Link
+              to="/Sectors"
+              className="text-sm text-emerald-400/90 hover:text-emerald-300 underline underline-offset-2"
+            >
+              Sector deep dive →
+            </Link>
+          </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {sectors.map((sector, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: i * 0.08 }}
-              className={`bg-white/[0.02] border border-white/[0.06] rounded-2xl p-6 hover:border-emerald-500/20 transition-all duration-300 ${
-                i === 0 ? "sm:col-span-2 lg:col-span-1" : ""
-              }`}
-            >
-              <div className="flex items-center justify-between mb-4">
-                <sector.icon className="w-5 h-5 text-emerald-400" />
-                <span className="text-[10px] font-medium text-emerald-400/60 bg-emerald-500/10 px-2 py-0.5 rounded-full uppercase tracking-wider">
-                  {sector.tag}
-                </span>
-              </div>
-              <h3 className="text-white font-semibold mb-2">{sector.name}</h3>
-              <p className="text-gray-500 text-sm leading-relaxed">{sector.desc}</p>
-            </motion.div>
-          ))}
+          {SECTORS.map((sector, i) => {
+            const Icon = ICON_MAP[sector.icon] || Package;
+            return (
+              <motion.div
+                key={sector.id}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: i * 0.08 }}
+                className={`bg-white/[0.02] border border-white/[0.06] rounded-2xl p-6 hover:border-emerald-500/20 transition-all duration-300 ${
+                  i === 0 ? "sm:col-span-2 lg:col-span-1" : ""
+                }`}
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <Icon className="w-5 h-5 text-emerald-400" />
+                  <span className="text-[10px] font-medium text-emerald-400/60 bg-emerald-500/10 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                    {sector.tag}
+                  </span>
+                </div>
+                <h3 className="text-white font-semibold mb-2">{sector.name}</h3>
+                <p className="text-gray-500 text-sm leading-relaxed mb-4">{sector.desc}</p>
+                <Link
+                  to={`/Sectors#${sector.id}`}
+                  className="text-xs font-medium text-emerald-400/80 hover:text-emerald-300"
+                >
+                  Read journey →
+                </Link>
+              </motion.div>
+            );
+          })}
         </div>
       </div>
     </section>

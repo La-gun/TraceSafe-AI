@@ -48,6 +48,13 @@ export default function OutcomeMetricsStrip() {
         >
           Definitions &amp; methodology
         </Link>
+        {" · "}
+        <Link
+          to="/Trust"
+          className="text-emerald-500/90 hover:text-emerald-400 underline underline-offset-2"
+        >
+          Trust center
+        </Link>
       </p>
     </motion.div>
   );

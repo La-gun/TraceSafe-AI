@@ -8,7 +8,9 @@ export default function Navbar() {
 
   const links = [
     { label: "Platform", href: "#platform" },
-    { label: "Trust", href: "/Home#security-trust-heading" },
+    { label: "Trust", href: "/Trust" },
+    { label: "Enterprise", href: "/Enterprise" },
+    { label: "Sectors", href: "/Sectors" },
     { label: "Outcomes", href: "/Proof" },
     { label: "Solutions", href: "/Solutions" },
     { label: "Dashboard", href: "/Dashboard" },
