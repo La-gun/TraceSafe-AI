@@ -68,24 +68,37 @@ Deno.serve(async (req) => {
       .slice(0, 10)
       .map(([state, count]) => ({ state, count }));
 
-    // Scans per day (last 7 days)
+    // Scans per day (last 7 days) — single pass over scanEvents
     const now = Date.now();
-    const scan_by_day = [];
+    const dayMs = 86400000;
+    const buckets = [];
     for (let i = 6; i >= 0; i--) {
-      const dayStart = new Date(now - i * 86400000);
+      const dayStart = new Date(now - i * dayMs);
       dayStart.setHours(0, 0, 0, 0);
-      const dayEnd = new Date(dayStart.getTime() + 86400000);
-      const dayLabel = dayStart.toLocaleDateString('en-GB', { month: 'short', day: 'numeric' });
-      const dayScans = scanEvents.filter(s => {
-        const t = new Date(s.created_date).getTime();
-        return t >= dayStart.getTime() && t < dayEnd.getTime();
-      });
-      scan_by_day.push({
-        date: dayLabel,
-        authentic: dayScans.filter(s => s.status === 'authentic').length,
-        suspicious: dayScans.filter(s => s.status === 'suspicious').length,
+      const t0 = dayStart.getTime();
+      buckets.push({
+        dayStart: t0,
+        dayEnd: t0 + dayMs,
+        label: dayStart.toLocaleDateString('en-GB', { month: 'short', day: 'numeric' }),
+        authentic: 0,
+        suspicious: 0,
       });
     }
+    for (const s of scanEvents) {
+      const t = new Date(s.created_date).getTime();
+      for (const b of buckets) {
+        if (t >= b.dayStart && t < b.dayEnd) {
+          if (s.status === 'authentic') b.authentic++;
+          else if (s.status === 'suspicious') b.suspicious++;
+          break;
+        }
+      }
+    }
+    const scan_by_day = buckets.map(({ label, authentic, suspicious }) => ({
+      date: label,
+      authentic,
+      suspicious,
+    }));
 
     return Response.json({
       total_scans,

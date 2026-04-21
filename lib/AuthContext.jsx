@@ -32,7 +32,10 @@ export const AuthProvider = ({ children }) => {
   const [isLoadingPublicSettings, setIsLoadingPublicSettings] = useState(true);
   const [authError, setAuthError] = useState(null);
   const [appPublicSettings, setAppPublicSettings] = useState(null);
-  const [role, setRoleState] = useState(() => getStoredRole() || 'consumer');
+  /** In enforced-auth builds, default to consumer until `/api/auth/me` sets role from the server. */
+  const [role, setRoleState] = useState(() =>
+    (isPublicDemoMode() ? (getStoredRole() || 'consumer') : 'consumer'),
+  );
 
   useEffect(() => {
     checkAppState();
@@ -60,7 +63,8 @@ export const AuthProvider = ({ children }) => {
       } catch (appError) {
         console.error('App state check failed:', appError);
 
-        if (appError.status === 403 && appError.data?.extra_data?.reason) {
+        const status = appError?.status ?? appError?.response?.status;
+        if (status === 403 && appError.data?.extra_data?.reason) {
           const reason = appError.data.extra_data.reason;
           if (reason === 'auth_required') {
             setAuthError({

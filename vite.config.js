@@ -2,8 +2,9 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 import { defineConfig, loadEnv } from 'vite';
 
+/** Only real API origins — do not use marketing/app base URLs as `/api` proxy targets. */
 const apiProxyTarget = (env) =>
-  env.VITE_APP_API_BASE_URL || env.VITE_BASE44_APP_BASE_URL;
+  env.VITE_APP_API_BASE_URL || env.VITE_API_BASE_URL || '';
 
 // https://vite.dev/config/
 export default defineConfig(({ mode, root = process.cwd() }) => {

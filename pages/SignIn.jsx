@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { backend } from "@/lib/backendClient";
 import { useAuth } from "@/lib/AuthContext";
 import { isPublicDemoMode } from "@/lib/demo/publicDemo";
+import { clearAccessTokens } from "@/lib/auth/accessToken";
 
 function normalizeReturnTo(raw) {
   if (!raw || typeof raw !== "string") return "/Dashboard";
@@ -87,7 +88,8 @@ export default function SignIn({ mode = "consumer" }) {
     setError(null);
     setIsSubmitting(true);
     try {
-      window.localStorage.setItem("tracesafe_access_token", token.trim());
+      window.sessionStorage.setItem("tracesafe_access_token", token.trim());
+      window.localStorage.removeItem("tracesafe_access_token");
       // Re-bootstrap and re-check auth.
       await checkAppState();
       navigate(returnTo, { replace: true });
@@ -99,9 +101,7 @@ export default function SignIn({ mode = "consumer" }) {
   };
 
   const handleClearToken = async () => {
-    window.localStorage.removeItem("tracesafe_access_token");
-    window.localStorage.removeItem("base44_access_token");
-    window.localStorage.removeItem("token");
+    clearAccessTokens();
     try {
       backend.auth.logout(false);
       await checkAppState();

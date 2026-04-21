@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { ChevronDown, Menu, X, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/AuthContext";
+import NafdacBadge from "@/components/branding/NafdacBadge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -145,7 +146,14 @@ export default function Navbar() {
               </DropdownMenuContent>
             </DropdownMenu>
           ))}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            <NafdacBadge
+              size={20}
+              showLabel={false}
+              pillClassName="px-2 py-1"
+              title="NAFDAC-aligned compliance"
+              className="hidden 2xl:inline-flex"
+            />
             <Link to={role === "regulator" ? "/login/regulator" : "/login/consumer"}>
               <Button
                 variant="outline"
@@ -174,6 +182,10 @@ export default function Navbar() {
 
       {mobileOpen && (
         <div className="xl:hidden bg-[#060B18]/95 backdrop-blur-xl border-t border-white/5 px-6 py-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <NafdacBadge size={20} showLabel={true} pillClassName="px-3 py-1.5" />
+            <span className="text-[10px] text-gray-500">Trust badge</span>
+          </div>
           {navGroups.map((group) => (
             <div key={group.label} className="pt-2">
               <div className="text-xs font-semibold tracking-wide text-gray-400 uppercase">

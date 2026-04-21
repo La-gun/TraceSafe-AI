@@ -19,11 +19,36 @@ Deno.serve(async (req) => {
     const user = await api.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const body = await req.json();
-    const { tag_uid, event_type, location, state, latitude, longitude, operator, partner_id } = body;
+    let body: Record<string, unknown>;
+    try {
+      body = await req.json();
+    } catch {
+      return Response.json({ error: 'Invalid JSON body' }, { status: 400 });
+    }
+    if (!body || typeof body !== 'object' || Array.isArray(body)) {
+      return Response.json({ error: 'Expected a JSON object' }, { status: 400 });
+    }
+
+    const rawTag = body.tag_uid;
+    const rawEvent = body.event_type;
+    const tag_uid = typeof rawTag === 'string' ? rawTag.trim() : '';
+    const event_type = typeof rawEvent === 'string' ? rawEvent.trim() : '';
+    const location = typeof body.location === 'string' ? body.location : undefined;
+    const state = typeof body.state === 'string' ? body.state : undefined;
+    const readFinite = (v: unknown) => {
+      const n = typeof v === 'number' ? v : typeof v === 'string' && v.trim() !== '' ? Number(v) : NaN;
+      return Number.isFinite(n) ? n : undefined;
+    };
+    const latitude = readFinite(body.latitude);
+    const longitude = readFinite(body.longitude);
+    const operator = typeof body.operator === 'string' ? body.operator : undefined;
+    const partner_id = typeof body.partner_id === 'string' ? body.partner_id : undefined;
 
     if (!tag_uid || !event_type) {
       return Response.json({ error: 'tag_uid and event_type are required' }, { status: 400 });
+    }
+    if (tag_uid.length > 200 || event_type.length > 64) {
+      return Response.json({ error: 'tag_uid or event_type exceeds maximum length' }, { status: 400 });
     }
 
     // 1. Look up tag in registry

@@ -6,6 +6,8 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Suspense, lazy } from 'react';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import { isPublicDemoMode } from '@/lib/demo/publicDemo';
+import MisconfiguredProduction from '@/components/MisconfiguredProduction';
+import { RequireRole } from '@/lib/routing/RouteGuards';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import DemoBanner from '@/components/DemoBanner';
 import SafeContainer from './components/SafeContainer';
@@ -57,31 +59,6 @@ const LoginRootRedirect = () => {
       state={location.state}
     />
   );
-};
-
-/**
- * Client-side route guard for navigation UX only. It does not authenticate users
- * and must not be relied on for authorization. Production APIs must enforce roles and
- * app registration on every sensitive path: `/api/auth/me`, bootstrap, and server
- * function handlers (`server/functions/`).
- */
-const RequireRole = ({ allow, children }) => {
-  const { role, isAuthenticated } = useAuth();
-  const location = useLocation();
-  const authEnforced = import.meta.env.VITE_REQUIRE_AUTH === 'true';
-  if (authEnforced && !isAuthenticated) {
-    return (
-      <Navigate
-        to="/login"
-        replace
-        state={{ from: location.pathname + location.search + location.hash }}
-      />
-    );
-  }
-  const ok = allow.includes(role);
-  if (ok) return children;
-  const target = role === 'regulator' ? '/login/regulator' : '/login/consumer';
-  return <Navigate to={target} replace state={{ from: location.pathname + location.search + location.hash }} />;
 };
 
 const PageTransition = ({ children }) => (
@@ -170,6 +147,9 @@ const AuthenticatedApp = () => {
 };
 
 function App() {
+  if (import.meta.env.PROD && import.meta.env.VITE_REQUIRE_AUTH !== 'true') {
+    return <MisconfiguredProduction />;
+  }
   return (
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>

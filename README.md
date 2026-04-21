@@ -12,7 +12,7 @@ For portability, dual-store behaviour, and procurement positioning, see **[`docs
 
 ## Security: client vs server
 
-React route guards (`RequireRole` in `App.jsx`) are **UX only**. They do not authenticate users and must not be treated as authorization. **Production** must validate the session or bearer token, app registration, and roles on **`/api/auth/me`**, the **bootstrap** route, and **every** sensitive **server function** under `server/functions/`.
+React route guards (`RequireRole` in [`lib/routing/RouteGuards.jsx`](lib/routing/RouteGuards.jsx)) are **UX only**. They do not authenticate users and must not be treated as authorization. **Production** must validate the session or bearer token, app registration, and roles on **`/api/auth/me`**, the **bootstrap** route, and **every** sensitive **server function** under `server/functions/`.
 
 ---
 
@@ -20,7 +20,9 @@ React route guards (`RequireRole` in `App.jsx`) are **UX only**. They do not aut
 
 | Variable | When / purpose |
 |----------|----------------|
-| `VITE_REQUIRE_AUTH` | Set to `true` to require a saved access token before the app runs against the live API (see Sign-in). |
+| `VITE_REQUIRE_AUTH` | Set to `true` to require a saved access token before the app runs against the live API (see Sign-in). **Required at build time for production** (`vite build`): without it, the app shows a configuration screen instead of public-demo mode. |
+| `VITE_API_BASE_URL` | Optional REST API origin (same role as `VITE_APP_API_BASE_URL`); used by the dev `/api` proxy when set. |
+| `VITE_ALLOW_CLEAR_ACCESS_TOKEN` | Set to `true` to allow `?clear_access_token=true` to clear stored tokens in production (default: dev-only). |
 | `VITE_API_PROVIDER` | `rest` (default) or `supabase`. |
 | `VITE_APP_ID` | Optional app identifier passed to bootstrap. |
 | `VITE_APP_API_BASE_URL` | REST API origin; dev server can proxy `/api` here when set. |

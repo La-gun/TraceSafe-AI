@@ -2,6 +2,7 @@ import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft, Shield } from "lucide-react";
 import { useTabHistory } from "@/lib/TabHistoryContext";
+import NafdacBadge from "@/components/branding/NafdacBadge";
 
 // Routes that are considered "root" and should NOT show the TopBar
 const ROOT_ROUTES = ["/Home", "/Dashboard", "/Enforcement", "/InspectorPortal", "/IncidentManager", "/Contact", "/Settings", "/Solutions", "/Proof", "/login", "/login/consumer", "/login/regulator", "/"];
@@ -48,6 +49,10 @@ export default function TopBar() {
         <div className="flex items-center gap-2 min-w-0">
           <Shield className="w-4 h-4 text-emerald-400 shrink-0" aria-hidden="true" />
           <span className="text-sm font-semibold text-white truncate">{title}</span>
+        </div>
+
+        <div className="ml-auto">
+          <NafdacBadge size={18} showLabel={false} pillClassName="px-2 py-1" />
         </div>
       </div>
     </header>

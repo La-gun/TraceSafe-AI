@@ -1,6 +1,7 @@
 import React from "react";
 import { Shield } from "lucide-react";
 import { Link } from "react-router-dom";
+import NafdacBadge from "@/components/branding/NafdacBadge";
 
 export default function Footer() {
   return (
@@ -14,6 +15,10 @@ export default function Footer() {
             <span className="text-sm font-semibold text-white tracking-tight">
               Trace<span className="text-emerald-400">Guard</span>
             </span>
+          </div>
+
+          <div className="order-3 md:order-none">
+            <NafdacBadge size={18} showLabel={true} pillClassName="px-3 py-1.5" />
           </div>
 
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
