@@ -5,7 +5,7 @@ import Navbar from "@/components/landing/Navbar";
 import Footer from "@/components/landing/Footer";
 
 /**
- * Shared layout for supply-chain stage pages (TraceSafe touchpoint flows).
+ * Shared layout for supply-chain stage pages (TraceGuard touchpoint flows).
  */
 export default function TouchpointStageLayout({
   title,

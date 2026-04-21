@@ -28,7 +28,7 @@ const ROADMAP_ICONS = [Lock, MapPin, ShieldAlert];
 
 export default function TrustCenter() {
   useEffect(() => {
-    document.title = "Trust center | TraceSafe AI";
+    document.title = "Trust center | TraceGuard";
   }, []);
 
   return (

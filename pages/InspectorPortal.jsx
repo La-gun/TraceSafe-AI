@@ -55,7 +55,7 @@ export default function InspectorPortal() {
   } = useOfflineSync();
 
   useEffect(() => {
-    document.title = "InspectorPortal | TraceSafe AI";
+    document.title = "InspectorPortal | TraceGuard";
   }, []);
 
   const runDemoScan = async (uid) => {

@@ -1,13 +1,21 @@
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Home, LayoutDashboard, Shield, Smartphone, Map } from "lucide-react";
+import { Home, LayoutDashboard, Shield, Smartphone, Map, ClipboardList } from "lucide-react";
+import { useAuth } from "@/lib/AuthContext";
 
-const NAV_ITEMS = [
-  { label: "Home",        href: "/Home",            icon: Home },
-  { label: "Dashboard",  href: "/Dashboard",        icon: LayoutDashboard },
-  { label: "Enforce",    href: "/Enforcement",      icon: Shield },
-  { label: "Inspector",  href: "/InspectorPortal",  icon: Smartphone },
-  { label: "Risk Map",   href: "/RiskDashboard",     icon: Map },
+const REGULATOR_NAV_ITEMS = [
+  { label: "Home",       href: "/Home",               icon: Home },
+  { label: "Dashboard",  href: "/Dashboard",          icon: LayoutDashboard },
+  { label: "Incidents",  href: "/IncidentManager",    icon: ClipboardList },
+  { label: "Enforce",    href: "/Enforcement",        icon: Shield },
+  { label: "Inspector",  href: "/InspectorPortal",    icon: Smartphone },
+  { label: "Risk Map",   href: "/RiskDashboard",      icon: Map },
+];
+
+const CONSUMER_NAV_ITEMS = [
+  { label: "Home",    href: "/Home",                         icon: Home },
+  { label: "Verify",  href: "/Verify",                       icon: Smartphone },
+  { label: "Assist",  href: "/ConsumerAssist",               icon: Shield },
 ];
 
 // Only show bottom nav on main app pages, not on touchpoint sub-pages
@@ -16,8 +24,11 @@ const HIDDEN_PATHS = ["/touchpoints/"];
 export default function BottomNavigation() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
+  const { role } = useAuth();
 
   if (HIDDEN_PATHS.some((p) => pathname.startsWith(p))) return null;
+
+  const items = role === "regulator" ? REGULATOR_NAV_ITEMS : CONSUMER_NAV_ITEMS;
 
   return (
     <nav
@@ -27,7 +38,7 @@ export default function BottomNavigation() {
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
       <div className="flex items-stretch justify-around max-w-lg mx-auto">
-        {NAV_ITEMS.map(({ label, href, icon: Icon }) => {
+        {items.map(({ label, href, icon: Icon }) => {
           const isActive = pathname === href || pathname.startsWith(href + "/");
           return (
             <button

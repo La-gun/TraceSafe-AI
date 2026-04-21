@@ -1,6 +1,6 @@
 # AI features — compliance and trust (procurement brief)
 
-This document packages how **TraceSafe uses AI** in this codebase so security, legal, and procurement teams can align **vendor questionnaires** and **data protection** narratives with implementation reality. It complements [`ENTERPRISE_AND_PORTABILITY.md`](./ENTERPRISE_AND_PORTABILITY.md).
+This document packages how **TraceGuard uses AI** in this codebase so security, legal, and procurement teams can align **vendor questionnaires** and **data protection** narratives with implementation reality. It complements [`ENTERPRISE_AND_PORTABILITY.md`](./ENTERPRISE_AND_PORTABILITY.md).
 
 ---
 

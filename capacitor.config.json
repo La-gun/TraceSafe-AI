@@ -1,6 +1,6 @@
 {
   "appId": "com.tracesafe.ai",
-  "appName": "TraceSafe AI",
+  "appName": "TraceGuard",
   "webDir": "dist",
   "server": {
     "androidScheme": "https"

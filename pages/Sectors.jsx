@@ -10,7 +10,7 @@ const ICON_MAP = { Pill, Wine, Wheat, Cpu, Package };
 
 export default function Sectors() {
   useEffect(() => {
-    document.title = "Sectors | TraceSafe AI";
+    document.title = "Sectors | TraceGuard";
   }, []);
 
   useEffect(() => {

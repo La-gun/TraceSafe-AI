@@ -26,7 +26,7 @@ export default function Settings() {
   const [showDelete, setShowDelete] = useState(false);
 
   useEffect(() => {
-    document.title = "Settings | TraceSafe AI";
+    document.title = "Settings | TraceGuard";
   }, []);
 
   return (

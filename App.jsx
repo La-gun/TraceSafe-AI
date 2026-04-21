@@ -37,6 +37,8 @@ const TrustCenter        = lazy(() => import('./pages/TrustCenter'));
 const Enterprise         = lazy(() => import('./pages/Enterprise'));
 const SectorsPage        = lazy(() => import('./pages/Sectors'));
 const GettingStarted     = lazy(() => import('./pages/GettingStarted'));
+const SignIn             = lazy(() => import('./pages/SignIn'));
+const QrScan             = lazy(() => import('./pages/QrScan'));
 
 // Shared route-level fallback spinner
 const RouteFallback = () => (
@@ -44,6 +46,43 @@ const RouteFallback = () => (
     <div className="w-8 h-8 border-4 border-emerald-500/20 border-t-emerald-400 rounded-full animate-spin" />
   </div>
 );
+
+/** `/login` → `/login/consumer` while preserving `location.state` (e.g. `from`) and query (e.g. `return`). */
+const LoginRootRedirect = () => {
+  const location = useLocation();
+  return (
+    <Navigate
+      to={{ pathname: '/login/consumer', search: location.search }}
+      replace
+      state={location.state}
+    />
+  );
+};
+
+/**
+ * Client-side route guard for navigation UX only. It does not authenticate users
+ * and must not be relied on for authorization. Production APIs must enforce roles and
+ * app registration on every sensitive path: `/api/auth/me`, bootstrap, and server
+ * function handlers (`server/functions/`).
+ */
+const RequireRole = ({ allow, children }) => {
+  const { role, isAuthenticated } = useAuth();
+  const location = useLocation();
+  const authEnforced = import.meta.env.VITE_REQUIRE_AUTH === 'true';
+  if (authEnforced && !isAuthenticated) {
+    return (
+      <Navigate
+        to="/login"
+        replace
+        state={{ from: location.pathname + location.search + location.hash }}
+      />
+    );
+  }
+  const ok = allow.includes(role);
+  if (ok) return children;
+  const target = role === 'regulator' ? '/login/regulator' : '/login/consumer';
+  return <Navigate to={target} replace state={{ from: location.pathname + location.search + location.hash }} />;
+};
 
 const PageTransition = ({ children }) => (
   <motion.div
@@ -64,9 +103,13 @@ const AnimatedRoutes = () => {
       <AnimatePresence mode="wait" initial={false}>
         <Routes location={location} key={location.pathname}>
           <Route path="/" element={<Navigate to="/Home" replace />} />
+          <Route path="/login"                         element={<LoginRootRedirect />} />
+          <Route path="/login/consumer"                element={<PageTransition><SignIn mode="consumer" /></PageTransition>} />
+          <Route path="/login/regulator"               element={<PageTransition><SignIn mode="regulator" /></PageTransition>} />
+          <Route path="/SignIn"                        element={<Navigate to="/login" replace />} />
           <Route path="/Home"                          element={<PageTransition><Home /></PageTransition>} />
           <Route path="/Solutions"                     element={<PageTransition><Solutions /></PageTransition>} />
-          <Route path="/Dashboard"                     element={<PageTransition><Dashboard /></PageTransition>} />
+          <Route path="/Dashboard"                     element={<RequireRole allow={['regulator']}><PageTransition><Dashboard /></PageTransition></RequireRole>} />
           <Route path="/Contact"                       element={<PageTransition><Contact /></PageTransition>} />
           <Route path="/Proof"                         element={<PageTransition><Proof /></PageTransition>} />
           <Route path="/Trust"                         element={<PageTransition><TrustCenter /></PageTransition>} />
@@ -79,11 +122,12 @@ const AnimatedRoutes = () => {
           <Route path="/touchpoints/wholesale-transfer" element={<PageTransition><WholesaleTransfer /></PageTransition>} />
           <Route path="/touchpoints/retail-receipt"    element={<PageTransition><RetailReceipt /></PageTransition>} />
           <Route path="/touchpoints/end-user-verify"   element={<PageTransition><EndUserVerify /></PageTransition>} />
-          <Route path="/Enforcement"                   element={<PageTransition><Enforcement /></PageTransition>} />
-          <Route path="/InspectorPortal"               element={<PageTransition><InspectorPortal /></PageTransition>} />
-          <Route path="/ConsumerAssist"              element={<PageTransition><ConsumerAssist /></PageTransition>} />
-          <Route path="/IncidentManager"             element={<PageTransition><IncidentManager /></PageTransition>} />
-          <Route path="/RiskDashboard"              element={<PageTransition><RiskDashboard /></PageTransition>} />
+          <Route path="/Enforcement"                   element={<RequireRole allow={['regulator']}><PageTransition><Enforcement /></PageTransition></RequireRole>} />
+          <Route path="/InspectorPortal"               element={<RequireRole allow={['regulator']}><PageTransition><InspectorPortal /></PageTransition></RequireRole>} />
+          <Route path="/IncidentManager"               element={<RequireRole allow={['regulator']}><PageTransition><IncidentManager /></PageTransition></RequireRole>} />
+          <Route path="/RiskDashboard"                 element={<RequireRole allow={['regulator']}><PageTransition><RiskDashboard /></PageTransition></RequireRole>} />
+          <Route path="/ConsumerAssist"                element={<RequireRole allow={['consumer']}><PageTransition><ConsumerAssist /></PageTransition></RequireRole>} />
+          <Route path="/Verify"                        element={<RequireRole allow={['consumer']}><PageTransition><QrScan /></PageTransition></RequireRole>} />
           <Route path="*"                              element={<PageTransition><PageNotFound /></PageTransition>} />
         </Routes>
       </AnimatePresence>
@@ -92,7 +136,9 @@ const AnimatedRoutes = () => {
 };
 
 const AuthenticatedApp = () => {
-  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
+  const { isLoadingAuth, isLoadingPublicSettings, authError } = useAuth();
+  const location = useLocation();
+  const hideChrome = location.pathname.startsWith('/login');
 
   if (isLoadingPublicSettings || isLoadingAuth) {
     return <RouteFallback />;
@@ -103,19 +149,22 @@ const AuthenticatedApp = () => {
       return <UserNotRegisteredError />;
     }
     if (authError.type === 'auth_required' && import.meta.env.VITE_REQUIRE_AUTH === 'true') {
-      navigateToLogin();
-      return null;
+      // Prefer staying in-app for login when auth is required.
+      // External auth can still be reached from the SignIn page via VITE_AUTH_LOGIN_URL.
+      if (!location.pathname.startsWith('/login')) {
+        return <Navigate to="/login" replace state={{ from: location.pathname + location.search + location.hash }} />;
+      }
     }
   }
 
   return (
     <SafeContainer>
-      {isPublicDemoMode() && <DemoBanner />}
-      <TopBar />
-      <div className="flex-1 pb-[calc(56px+env(safe-area-inset-bottom))]">
+      {isPublicDemoMode() && location.pathname !== '/Home' && !location.pathname.startsWith('/login') && <DemoBanner />}
+      {!hideChrome && <TopBar />}
+      <div className={hideChrome ? "flex-1" : "flex-1 pb-[calc(56px+env(safe-area-inset-bottom))]"}>
         <AnimatedRoutes />
       </div>
-      <BottomNavigation />
+      {!hideChrome && <BottomNavigation />}
     </SafeContainer>
   );
 };

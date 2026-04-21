@@ -1,4 +1,4 @@
-# TraceSafe backend API — REST contract & Supabase mapping
+# TraceGuard backend API — REST contract & Supabase mapping
 
 The web app no longer ships `@base44/sdk`. It talks to your infrastructure through:
 

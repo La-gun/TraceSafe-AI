@@ -38,7 +38,7 @@ export default function SecurityTrustSection() {
             Honest limits, layered defence
           </h2>
           <p className="text-gray-500 max-w-2xl mx-auto text-sm sm:text-base leading-relaxed">
-            TraceSafe is stronger than static QR-only labelling, but no field system should
+            TraceGuard is stronger than static QR-only labelling, but no field system should
             overclaim. Below is what we acknowledge, what the stack already uses for
             decisions today, and how we plan to harden trust over time. For a printable
             procurement view, see{" "}

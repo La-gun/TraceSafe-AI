@@ -4,7 +4,7 @@ import { ArrowLeft, Shield } from "lucide-react";
 import { useTabHistory } from "@/lib/TabHistoryContext";
 
 // Routes that are considered "root" and should NOT show the TopBar
-const ROOT_ROUTES = ["/Home", "/Dashboard", "/Enforcement", "/InspectorPortal", "/Contact", "/Settings", "/Solutions", "/Proof", "/"];
+const ROOT_ROUTES = ["/Home", "/Dashboard", "/Enforcement", "/InspectorPortal", "/IncidentManager", "/Contact", "/Settings", "/Solutions", "/Proof", "/login", "/login/consumer", "/login/regulator", "/"];
 
 export default function TopBar() {
   const navigate = useNavigate();
@@ -61,7 +61,9 @@ function deriveTitleFromPath(pathname) {
     "/touchpoints/wholesale-transfer": "Wholesale Transfer",
     "/touchpoints/retail-receipt":     "Retail Receipt",
     "/touchpoints/end-user-verify":    "End-User Verify",
+    "/Verify":                         "Verify",
     "/RiskDashboard":                  "Risk Dashboard",
+    "/IncidentManager":               "Incidents",
   };
   if (map[pathname]) return map[pathname];
   const seg = pathname.split("/").filter(Boolean).pop() || "";

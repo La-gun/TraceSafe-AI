@@ -2,8 +2,28 @@ import React, { createContext, useState, useContext, useEffect } from 'react';
 import { backend } from '@/lib/backendClient';
 import { appParams } from '@/lib/app-params';
 import { fetchAppBootstrap } from '@/lib/api/bootstrap';
+import { isPublicDemoMode } from '@/lib/demo/publicDemo';
 
+/**
+ * Auth state is driven by bootstrap + `/api/auth/me` (or Supabase session). Demo role
+ * selection in the browser is not a security boundary. Hosted backends must enforce
+ * authentication, registration, and role checks on every protected API and function.
+ */
 const AuthContext = createContext();
+
+const ROLE_STORAGE_KEY = 'tracesafe_role';
+
+function getStoredRole() {
+  if (typeof window === 'undefined') return null;
+  const r = window.localStorage.getItem(ROLE_STORAGE_KEY);
+  return r === 'consumer' || r === 'regulator' ? r : null;
+}
+
+function setStoredRole(role) {
+  if (typeof window === 'undefined') return;
+  if (!role) window.localStorage.removeItem(ROLE_STORAGE_KEY);
+  else window.localStorage.setItem(ROLE_STORAGE_KEY, role);
+}
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -12,10 +32,17 @@ export const AuthProvider = ({ children }) => {
   const [isLoadingPublicSettings, setIsLoadingPublicSettings] = useState(true);
   const [authError, setAuthError] = useState(null);
   const [appPublicSettings, setAppPublicSettings] = useState(null);
+  const [role, setRoleState] = useState(() => getStoredRole() || 'consumer');
 
   useEffect(() => {
     checkAppState();
   }, []);
+
+  const setRole = (nextRole) => {
+    const r = nextRole === 'regulator' ? 'regulator' : 'consumer';
+    setRoleState(r);
+    setStoredRole(r);
+  };
 
   const checkAppState = async () => {
     try {
@@ -76,6 +103,13 @@ export const AuthProvider = ({ children }) => {
       setIsLoadingAuth(true);
       const has = await backend.auth.hasCredentials();
       if (!has) {
+        // In public demo mode, allow role-selected navigation without a backend token.
+        if (isPublicDemoMode()) {
+          setUser({ id: 'demo', email: null, role });
+          setIsAuthenticated(true);
+          setIsLoadingAuth(false);
+          return;
+        }
         setUser(null);
         setIsAuthenticated(false);
         setIsLoadingAuth(false);
@@ -83,11 +117,20 @@ export const AuthProvider = ({ children }) => {
       }
       const currentUser = await backend.auth.me();
       setUser(currentUser);
+      if (currentUser?.role === 'regulator' || currentUser?.role === 'consumer') {
+        setRole(currentUser.role);
+      }
       setIsAuthenticated(true);
       setIsLoadingAuth(false);
     } catch (error) {
       console.error('User auth check failed:', error);
       setIsLoadingAuth(false);
+      if (isPublicDemoMode()) {
+        // Demo mode: don't block the app if /auth/me is unavailable.
+        setUser({ id: 'demo', email: null, role });
+        setIsAuthenticated(true);
+        return;
+      }
       setIsAuthenticated(false);
 
       const status = error.status ?? error.response?.status;
@@ -103,6 +146,8 @@ export const AuthProvider = ({ children }) => {
   const logout = (shouldRedirect = true) => {
     setUser(null);
     setIsAuthenticated(false);
+    setStoredRole(null);
+    setRoleState('consumer');
 
     if (shouldRedirect) {
       backend.auth.logout(window.location.href);
@@ -118,6 +163,8 @@ export const AuthProvider = ({ children }) => {
   return (
     <AuthContext.Provider value={{
       user,
+      role,
+      setRole,
       isAuthenticated,
       isLoadingAuth,
       isLoadingPublicSettings,

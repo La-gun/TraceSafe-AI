@@ -115,7 +115,7 @@ Apply order (Postgres): `001_schema.sql` then `002_triggers.sql`.
 
 **Bridge fields to ops entities:** `physical_tag_assignment.tag_uid` ↔ `TagRegistry.tag_uid`; `platform_product_id` / `platform_product_catalog_link` ↔ `TagRegistry.product_id` (or your SKU id).
 
-### How this can enhance TraceSafe (beyond “another table”)
+### How this can enhance TraceGuard (beyond “another table”)
 
 1. **Dual verification** — Inspector flow can require agreement between scan state in the ops store and NFT DB mint/binding state (catches “real NFC, wrong collection” or stale metadata).
 2. **Regulatory narrative** — Time-stamped metadata revisions give a defensible story for NAFDAC-style inquiries (“this batch pointed at revision 3 as of date X”).
@@ -153,7 +153,7 @@ Expose these to the Deno (or compatible) runtime that executes [`server/function
 
 ```bash
 NFT_REGISTRY_DATABASE_URL="postgres://USER:PASSWORD@HOST:5432/nft_registry"
-NFT_REGISTRY_TENANT_EXTERNAL_KEY=default NFT_REGISTRY_TENANT_DISPLAY_NAME="TraceSafe" NFT_REGISTRY_SYNC_STRICT=false
+NFT_REGISTRY_TENANT_EXTERNAL_KEY=default NFT_REGISTRY_TENANT_DISPLAY_NAME="TraceGuard" NFT_REGISTRY_SYNC_STRICT=false
 ```
 
 Or load several at once from a file your host supports.

@@ -24,7 +24,7 @@ const differentiation = [
 
 export default function Enterprise() {
   useEffect(() => {
-    document.title = "Enterprise & portability | TraceSafe AI";
+    document.title = "Enterprise & portability | TraceGuard";
   }, []);
 
   return (

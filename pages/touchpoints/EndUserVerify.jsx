@@ -10,7 +10,7 @@ const RESULTS = [
 
 export default function EndUserVerify() {
   useEffect(() => {
-    document.title = "touchpoints | TraceSafe AI";
+    document.title = "touchpoints | TraceGuard";
   }, []);
 
   return (

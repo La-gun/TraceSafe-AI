@@ -1,5 +1,5 @@
 /**
- * seedDemoData — idempotent demo dataset for TraceSafe / TraceGuard
+ * seedDemoData — idempotent demo dataset for TraceGuard
  *
  * Creates Batch, TagRegistry (+ commissioning ScanEvent), DiversionAlerts,
  * ConsumerReport, extended lifecycle data (partners, custody transfers, batch status,
@@ -486,7 +486,7 @@ Deno.serve(async (req) => {
       }
 
       for (let i = 0; i < 10; i++) {
-        const name = `TraceSafe Demo Partner ${i + 1}`;
+        const name = `TraceGuard Demo Partner ${i + 1}`;
         try {
           const existing = await api.asServiceRole.entities.Partner.filter({ name });
           if (existing[0]) {
@@ -863,7 +863,7 @@ Deno.serve(async (req) => {
             transfer_type: tt,
             from_partner_id: fromId,
             to_partner_id: toId,
-            to_partner_name: `TraceSafe Demo Partner ${(i % 10) + 1}`,
+            to_partner_name: `TraceGuard Demo Partner ${(i % 10) + 1}`,
             transfer_location: `${st.display} — bonded facility`,
             transfer_state: st.display,
             units_transferred: 10 + (i % 20) * 5,

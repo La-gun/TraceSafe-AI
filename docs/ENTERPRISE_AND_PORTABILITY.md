@@ -1,12 +1,12 @@
 # Enterprise, portability, and dual-store operations
 
-This document **corrects** two common misconceptions about TraceSafe’s architecture: total “platform lock-in,” and unmanaged dual-database risk.
+This document **corrects** two common misconceptions about TraceGuard’s architecture: total “platform lock-in,” and unmanaged dual-database risk.
 
 ---
 
 ## Hosted backend — dependency vs lock-in
 
-**Accurate framing:** TraceSafe targets a **hosted application backend** (authentication, entity APIs, and execution of the functions in `server/functions/`). That is a **real infrastructure dependency**, comparable to Firebase, Supabase, or another BaaS — not a bespoke black box that holds all of your logic.
+**Accurate framing:** TraceGuard targets a **hosted application backend** (authentication, entity APIs, and execution of the functions in `server/functions/`). That is a **real infrastructure dependency**, comparable to Firebase, Supabase, or another BaaS — not a bespoke black box that holds all of your logic.
 
 **What you actually own and can migrate:**
 

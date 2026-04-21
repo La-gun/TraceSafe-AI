@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { backend } from "@/lib/backendClient";
 import { invokeWithDemo } from "@/lib/demo/invokeWithDemo";
@@ -15,6 +15,10 @@ import usePullToRefresh from "@/hooks/usePullToRefresh.jsx";
 const QUERY_KEY = ["consumer-reports"];
 
 export default function IncidentManager() {
+  useEffect(() => {
+    document.title = "Incidents | TraceGuard";
+  }, []);
+
   const queryClient = useQueryClient();
   const [selectedId, setSelectedId] = useState(null);
   const [filterStatus, setFilterStatus] = useState("all");

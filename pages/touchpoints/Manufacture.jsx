@@ -3,7 +3,7 @@ import TouchpointStageLayout from "@/components/touchpoints/TouchpointStageLayou
 
 export default function Manufacture() {
   useEffect(() => {
-    document.title = "touchpoints | TraceSafe AI";
+    document.title = "touchpoints | TraceGuard";
   }, []);
 
   return (

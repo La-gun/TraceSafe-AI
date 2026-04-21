@@ -1,0 +1,39 @@
+flowchart TB
+  subgraph clients["Clients"]
+    SPA["React / Vite SPA"]
+  end
+
+  subgraph app_layer["lib/api"]
+    API["rest or supabase"]
+  end
+
+  subgraph hosted["Hosted application backend"]
+    AUTH["Auth"]
+    BOOT["Bootstrap"]
+    ENT["Entity CRUD"]
+    FN["Named functions"]
+    STOR["File upload"]
+    OPS_DB[("Operational data store")]
+  end
+
+  subgraph deployable["server/functions"]
+    SF["scanTag, commissionTag, getDashboardStats, seedDemoData, …"]
+  end
+
+  subgraph optional["Optional NFT registry"]
+    PG[("PostgreSQL nft_registry")]
+    SYNC["nftRegistrySync"]
+  end
+
+  SPA --> API
+  API --> AUTH
+  API --> BOOT
+  API --> ENT
+  API --> FN
+  API --> STOR
+  ENT --> OPS_DB
+  FN --> OPS_DB
+  SF --> OPS_DB
+  SF --> SYNC
+  SYNC --> PG
+  FN -.-> SF

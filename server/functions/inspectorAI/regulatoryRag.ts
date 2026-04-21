@@ -18,7 +18,7 @@ export const REGULATORY_CORPUS: RegulatoryChunk[] = [
   {
     id: 'reg-nafd-placeholder-000',
     title: 'Corpus notice (read first)',
-    issuing_body: 'TraceSafe / demo corpus',
+    issuing_body: 'TraceGuard / demo corpus',
     effective_or_issued: '2026-01-01',
     source_url: 'https://www.nafdac.gov.ng/',
     kind: 'guidance',

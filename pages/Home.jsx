@@ -18,14 +18,19 @@ export default function Home() {
   const location = useLocation();
 
   useEffect(() => {
-    document.title = "TraceSafe AI";
+    document.title = "TraceGuard";
   }, []);
 
   useEffect(() => {
-    if (location.hash !== "#security-trust-heading") return;
-    const id = "security-trust-heading";
-    const run = () =>
-      document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    const id = (location.hash || "").replace(/^#/, "");
+    if (!id) return;
+    const run = () => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+      // Offset for the fixed navbar so headings aren't hidden under it.
+      window.scrollBy({ top: -80, left: 0, behavior: "smooth" });
+    };
     requestAnimationFrame(() => requestAnimationFrame(run));
   }, [location.hash, location.pathname]);
 

@@ -1,0 +1,11 @@
+erDiagram
+  Batch ||--o{ TagRegistry : tags
+  Batch ||--o{ ScanEvent : events
+  Batch ||--o{ DiversionAlert : alerts
+  Batch ||--o{ BatchStatus : workflow
+  TagRegistry ||--o{ ScanEvent : scans
+  TagRegistry ||--o{ AggregationLink : hierarchy
+  Partner ||--o{ CustodyTransfer : handoffs
+  Batch }o--o{ CustodyTransfer : context
+  ConsumerReport }o--o| Batch : optional
+  InspectionReport }o--o| Batch : optional

@@ -15,7 +15,7 @@ export default function RiskDashboard() {
   const [tab, setTab] = useState("heatmap");
   const [selectedLocation, setSelectedLocation] = useState(null);
   useEffect(() => {
-    document.title = "RiskDashboard | TraceSafe AI";
+    document.title = "RiskDashboard | TraceGuard";
   }, []);
 
   const {

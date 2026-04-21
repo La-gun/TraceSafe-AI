@@ -1,0 +1,15 @@
+erDiagram
+  nft_tenant ||--o{ nft_hierarchy_node : owns
+  nft_tenant ||--o{ nft_token_record : owns
+  nft_tenant ||--o{ physical_tag_assignment : owns
+  nft_tenant ||--o{ platform_product_catalog_link : owns
+  nft_tenant ||--o{ nft_metadata_revision : owns
+  nft_tenant ||--o{ nft_audit_event : owns
+
+  nft_hierarchy_node ||--o{ nft_hierarchy_node : parent
+  nft_hierarchy_node ||--o{ nft_token_record : node
+  nft_hierarchy_node ||--o{ physical_tag_assignment : node
+  nft_hierarchy_node ||--o{ platform_product_catalog_link : node
+  nft_hierarchy_node ||--o{ nft_metadata_revision : node
+
+  nft_token_record ||--o{ physical_tag_assignment : token

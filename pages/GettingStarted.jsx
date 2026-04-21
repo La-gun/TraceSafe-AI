@@ -46,7 +46,7 @@ const steps = [
 
 export default function GettingStarted() {
   useEffect(() => {
-    document.title = "Getting started | TraceSafe AI";
+    document.title = "Getting started | TraceGuard";
   }, []);
 
   return (

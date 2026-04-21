@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TraceGuard — Architecture &amp; operations report</title>
+  <style>
+    :root { color-scheme: light; }
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      line-height: 1.5;
+      color: #1a1a1a;
+      max-width: 44rem;
+      margin: 0 auto;
+      padding: 1.25rem 1.5rem 3rem;
+      font-size: 11pt;
+    }
+    h1 { font-size: 1.65rem; margin-top: 0; border-bottom: 1px solid #ccc; padding-bottom: 0.35rem; }
+    h2 { font-size: 1.2rem; margin-top: 1.75rem; page-break-after: avoid; }
+    h3 { font-size: 1.05rem; margin-top: 1.25rem; page-break-after: avoid; }
+    code { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: 0.92em; background: #f4f4f4; padding: 0.1em 0.35em; border-radius: 3px; }
+    a { color: #0b57d0; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    hr { border: none; border-top: 1px solid #ddd; margin: 1.5rem 0; }
+    ul, ol { padding-left: 1.35rem; }
+    li { margin: 0.25em 0; }
+    p { margin: 0.65em 0; }
+    p img, figure img { display: block; margin: 0.75rem auto; }
+    img {
+      max-width: 100%;
+      height: auto;
+      page-break-inside: avoid;
+    }
+    @media print {
+      body { padding: 0; max-width: none; font-size: 10pt; }
+      h2 { page-break-before: auto; }
+    }
+  </style>
+</head>
+<body>
+<h1>TraceGuard — Architecture &amp; operations report</h1>
+<p>This document combines the <strong>architecture narrative</strong>, <strong>technical diagrams</strong>, and <strong>end-to-end business flow</strong> for stakeholders, implementation partners, and security reviewers. Generated from repository sources in <code>docs/</code>.</p>
+<p><strong>Diagram sources:</strong> <code>docs/diagrams/*.mmd</code> · <strong>Narrative source:</strong> <code>docs/ARCHITECTURE_NARRATIVE.md</code></p>
+<hr>
+<h2>1. Product context</h2>
+<p>TraceGuard supports <strong>authenticate → trace → enforce</strong> for regulated physical goods: serialised NFC tags, scan events across the supply chain, diversion intelligence, inspector workflows, and optional linkage to an <strong>NFT-oriented tag registry</strong> in PostgreSQL. The repository ships a <strong>single-page web application</strong> and <strong>reference server logic</strong>; your <strong>hosted backend</strong> owns authentication, persistence, and API routing unless you adopt Supabase end-to-end.</p>
+<hr>
+<h2>2. Layered system architecture</h2>
+<p>The first diagram (<code>docs/diagrams/01-architecture.mmd</code>) shows a deliberate split between <strong>what runs in the browser</strong>, <strong>how the app talks to infrastructure</strong>, and <strong>where state actually lives</strong>.</p>
+<p><img src="diagrams/01-architecture.png" alt="Layered system architecture"></p>
+<h3>2.1 Client: React / Vite SPA</h3>
+<p>The UI is a modern React application built with Vite. It loads only public configuration and user-visible data through controlled APIs. It does not embed database drivers or service-role secrets; that boundary keeps the attack surface small and aligns with typical compliance expectations for front-end code.</p>
+<h3>2.2 Integration adapter: <code>lib/api</code></h3>
+<p>All backend access is funnelled through <strong><code>lib/api</code></strong>, which switches on <strong><code>VITE_API_PROVIDER</code></strong>:</p>
+<ul>
+<li><strong>REST</strong> — The app uses <code>fetch</code> against your API origin, sending a bearer token from storage for authenticated calls. This supports custom gateways, existing enterprise APIs, or a thin BFF you operate yourself.</li>
+<li><strong>Supabase</strong> — The same abstractions map to Supabase Auth, PostgREST-style entity access, Storage, and Edge Function invocation.</li>
+</ul>
+<p>That dual-provider pattern is a <strong>portability</strong> choice: the product narrative (traceability, enforcement, inspector tools) stays stable while you swap the concrete host (custom REST vs managed Postgres + functions). Details of paths and payloads are specified in <a href="BACKEND_API.md"><code>BACKEND_API.md</code></a>.</p>
+<h3>2.3 Hosted application backend</h3>
+<p>Regardless of provider, the logical backend exposes:</p>
+<ul>
+<li><strong>Auth</strong> — Session or JWT validation and a <code>me</code>-style profile (including optional <code>role</code> for admin-only flows).</li>
+<li><strong>Bootstrap</strong> — Lightweight public app metadata so the shell can start before deep data loads.</li>
+<li><strong>Entity CRUD</strong> — Create, read, and update for tables that back forms and queues (for example inspection reports, consumer reports, batch status, contact leads), with naming aligned to <code>lib/api/entityTableMap.js</code> when using the REST table contract.</li>
+<li><strong>Named functions</strong> — Coarse-grained operations the UI invokes by name (<code>scanTag</code>, <code>commissionTag</code>, <code>getDashboardStats</code>, <code>inspectorAI</code>, and others). These encapsulate joins, aggregations, AI tool use, and <strong>elevated read patterns</strong> where row-level security would otherwise return empty lists to the browser.</li>
+<li><strong>File upload</strong> — Binary uploads for evidence photos and similar artifacts, returning durable URLs for persistence on entity rows.</li>
+</ul>
+<p>Underneath these APIs sits the <strong>operational data store</strong>: the database or tables that hold batches, tags, scans, alerts, partners, and the rest of the domain. That store is <strong>authoritative for live operations</strong>—especially <strong>scan throughput</strong> and <strong>enforcement state</strong>.</p>
+<h3>2.4 Server functions (reference and deployment target)</h3>
+<p>The <code>server/functions/</code> tree holds <strong>TypeScript handlers</strong> that embody business rules: scanning logic, commissioning, dashboard statistics, demo seeding, optional AI assistants, and <strong>NFT registry synchronisation</strong>. In deployment, these may run as Supabase Edge Functions, a Node service, or workers behind your API gateway—the diagram shows them writing to the <strong>same operational store</strong> the UI ultimately observes.</p>
+<p>The dashed line from <strong>named functions</strong> to <strong>server/functions</strong> indicates that <strong>your</strong> REST or Edge deployment <strong>wires</strong> those routes to this logic (or a reimplementation). The repository treats this code as the <strong>authoritative reference</strong> for behaviour, not as an opaque black box.</p>
+<h3>2.5 Optional NFT registry (PostgreSQL)</h3>
+<p>Operational NFC and event data remain in the main entity store. A <strong>separate PostgreSQL schema</strong> (<code>nft_registry</code>, defined in <code>database/nft-registry/postgres/001_schema.sql</code>) holds <strong>taxonomy, hierarchy, token lifecycle, metadata revisions, and physical-tag inventory</strong> suitable for enterprise structure and optional on-chain alignment.</p>
+<p>Synchronisation (<code>nftRegistrySync</code> and related call sites) runs <strong>after</strong> successful operational writes where configured (for example commissioning). That order makes the <strong>ops store canonical for “what happened in the field”</strong>, while the NFT database can be authoritative for <strong>catalogue structure, mint state, and compliance-oriented metadata history</strong> without contending with high-volume scan ingestion. Environment variables for the registry connection are <strong>server-side only</strong>; see <a href="DATABASE.md"><code>DATABASE.md</code></a>.</p>
+<hr>
+<h2>3. Operational domain model (conceptual)</h2>
+<p>The second diagram (<code>docs/diagrams/02-operational-domain.mmd</code>) is a <strong>conceptual entity-relationship view</strong> of the domain described in <a href="DATABASE.md"><code>DATABASE.md</code></a>. Your hosted backend must implement storage that satisfies these relationships; exact column names and foreign keys are part of your schema design.</p>
+<p><img src="diagrams/02-operational-domain.png" alt="Operational domain model (conceptual ER)"></p>
+<ul>
+<li><strong>Batch</strong> is the anchor for regulated product lots: diversion scoring, zones, and enforcement posture typically roll up here.</li>
+<li><strong>TagRegistry</strong> binds <strong>physical NFC identities</strong> to batches (and product identifiers as you model them).</li>
+<li><strong>ScanEvent</strong> records <strong>what was scanned, where, and when</strong>—commissioning, port, wholesale, retail, consumer verification, returns, seizure, and similar touchpoints. Events tie back to tags and batches for timelines and analytics.</li>
+<li><strong>DiversionAlert</strong> and <strong>BatchStatus</strong> support <strong>regulator-facing</strong> risk signals and <strong>workflow</strong> states (holds, recalls, quarantine).</li>
+<li><strong>AggregationLink</strong> expresses <strong>parent/child tag hierarchy</strong> (case, pallet, item) where your programme uses aggregated packaging.</li>
+<li><strong>Partner</strong> and <strong>CustodyTransfer</strong> model <strong>handoffs</strong> between supply-chain actors.</li>
+<li><strong>ConsumerReport</strong> and <strong>InspectionReport</strong> capture <strong>downstream</strong> and <strong>field</strong> intelligence; they may reference batches or tags depending on your forms.</li>
+<li><strong>ContactLead</strong> is intentionally lightweight: marketing or support intake, not core traceability.</li>
+</ul>
+<p>Some dashboards and maps load aggregated data through <strong>server functions</strong> using a <strong>service role</strong> (or equivalent) so that <strong>entity-level read rules</strong> in the browser do not silently empty charts for legitimate signed-in users. That pattern is documented alongside <strong><code>getRiskMapData</code></strong> and <strong><code>listConsumerReports</code></strong> in <a href="DATABASE.md"><code>DATABASE.md</code></a>.</p>
+<hr>
+<h2>4. NFT registry data model</h2>
+<p>The third diagram (<code>docs/diagrams/03-nft-registry.mmd</code>) matches the PostgreSQL schema: a <strong>tenant-scoped tree</strong> of hierarchy nodes, optional <strong>on-chain token records</strong>, <strong>physical tag assignments</strong> keyed by <code>tag_uid</code>, <strong>product-to-node catalog links</strong>, <strong>versioned metadata revisions</strong> (for “what the consumer saw at time T”), and an <strong>append-style audit trail</strong>.</p>
+<p><img src="diagrams/03-nft-registry.png" alt="NFT registry data model (PostgreSQL ER)"></p>
+<p><strong>Bridge fields</strong> tie this world to operations: <strong><code>physical_tag_assignment.tag_uid</code></strong> aligns with <strong><code>TagRegistry.tag_uid</code></strong>; <strong>platform product identifiers</strong> align with your SKU or product keys in the ops layer. Integration can be <strong>event-driven</strong> (commission → sync message) or <strong>batch reconciliation</strong>; strict failure modes are governed by <strong><code>NFT_REGISTRY_SYNC_STRICT</code></strong> as described in <a href="DATABASE.md"><code>DATABASE.md</code></a>.</p>
+<hr>
+<h2>5. End-to-end business flow (operations)</h2>
+<p>The following diagram summarises the <strong>business process</strong> from configuration and master data through commissioning, supply-chain scans, consumer verification, risk signals, compliance review, inspections, and reporting. It complements the technical architecture above for product, operations, and executive audiences.</p>
+<p><img src="diagrams/04-business-flow.png" alt="End-to-end business flow"></p>
+<hr>
+<h2>6. Design principles (summary)</h2>
+<ol>
+<li><strong>Thin client, thick contracts</strong> — The browser speaks only HTTP-level APIs; complex rules and privileged reads live server-side.</li>
+<li><strong>Operational store first</strong> — Scans and enforcement state remain in the primary backend; optional NFT data extends—not replaces—that truth.</li>
+<li><strong>Provider portability</strong> — <code>rest</code> vs <code>supabase</code> lets you align procurement and existing infrastructure without rewriting the product UI.</li>
+<li><strong>Explicit sync boundary</strong> — The NFT registry is a <strong>separate database</strong> so taxonomy, legal metadata, and token lifecycle can evolve on their own cadence and scaling profile.</li>
+<li><strong>Secrets stay off the bundle</strong> — Registry URLs, service keys, and AI credentials belong in <strong>server function</strong> or <strong>backend</strong> configuration only.</li>
+</ol>
+<p>Together, the diagrams and this narrative describe <strong>one coherent architecture</strong>: a traceability front end, a pluggable API surface, an operational system of record, optional reference server logic, and an optional PostgreSQL NFT catalogue linked by clear bridge fields and sync hooks.</p>
+</body>
+</html>

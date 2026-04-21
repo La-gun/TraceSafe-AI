@@ -1,0 +1,81 @@
+%% TraceSafe AI — end-to-end business flow (presentation export)
+flowchart TB
+  subgraph P0["Phase: Configuration"]
+    A1[Administrator: tenants, auth, API provider, optional NFT settings]
+    A2{NFT registry enabled?}
+    A1 --> A2
+  end
+
+  subgraph P1["Phase: Programme & master data"]
+    B1[Programme operator: create batch & product linkage]
+    B2[Prepare tag inventory in TagRegistry]
+    B1 --> B2
+  end
+
+  subgraph P2["Phase: Commissioning & system of record"]
+    C1[Authorised user: commission tag to batch]
+    C2[Server function: commissionTag → operational store]
+    C3{Commission OK?}
+    C4[Optional: nftRegistrySync → PostgreSQL nft_registry]
+    C1 --> C2 --> C3
+    C3 -->|Yes| C4
+    C3 -->|No| X1[Correct data / retry; no registry sync]
+  end
+
+  subgraph P3["Phase: Distribution & scans"]
+    D1[Partner: custody handoff → CustodyTransfer]
+    D2[Partner / role: operational scan → scanTag]
+    D3[Operational store: ScanEvent + batch/tag links]
+    D1 --> D2 --> D3
+  end
+
+  subgraph P4["Phase: Consumer verify (optional)"]
+    E1[Consumer: verify tag]
+    E2{Tag valid for batch?}
+    E3[Show authorised product view; log event / report]
+    E4[Deny or safe messaging; optional ConsumerReport]
+    E1 --> E2
+    E2 -->|Yes| E3
+    E2 -->|No| E4
+  end
+
+  subgraph P5["Phase: Risk & enforcement engine"]
+    F1[Server: correlate scans, routes, zones]
+    F2{Diversion threshold crossed?}
+    F3[Create/update DiversionAlert; update BatchStatus if rules say so]
+    F4[Routine monitoring only]
+    F1 --> F2
+    F2 -->|Yes| F3
+    F2 -->|No| F4
+  end
+
+  subgraph P6["Phase: Review & approval"]
+    G1[Programme / compliance: triage alerts & timeline]
+    G2{Approval for hold / recall / quarantine?}
+    G3[Apply BatchStatus; notify stakeholders / regulator per SOP]
+    G4[Clear or monitor; document decision]
+    G1 --> G2
+    G2 -->|Enforce| G3
+    G2 -->|No enforcement| G4
+  end
+
+  subgraph P7["Phase: Field & reporting"]
+    H1[Inspector: InspectionReport + evidence upload]
+    H2[Dashboards & risk maps via named functions]
+    H3[Feedback: rule tuning, partner coverage, reconciliation]
+    H1 --> H2 --> H3
+  end
+
+  A2 -->|Yes| B1
+  A2 -->|No| B1
+  B2 --> C1
+  C4 --> D1
+  X1 --> B2
+  D3 --> F1
+  E3 --> F1
+  E4 --> F1
+  F3 --> G1
+  F4 --> G1
+  G3 --> H1
+  G4 --> H1
+  H2 --> G1

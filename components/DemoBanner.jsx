@@ -41,12 +41,6 @@ export default function DemoBanner() {
               Connection settings
             </Link>
           )}
-          <span className="hidden sm:inline text-amber-200/80 whitespace-nowrap" title="Build-time env var for deployments that require authentication">
-            <span className="text-amber-500/50 mr-2" aria-hidden>
-              ·
-            </span>
-            Require sign-in: <code className="text-amber-100/90">VITE_REQUIRE_AUTH=true</code>
-          </span>
         </div>
       </div>
     </div>

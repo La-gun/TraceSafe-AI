@@ -59,7 +59,7 @@ const ADDITIONAL = [
 
 export default function Solutions() {
   useEffect(() => {
-    document.title = "Solutions | TraceSafe AI";
+    document.title = "Solutions | TraceGuard";
   }, []);
 
   return (

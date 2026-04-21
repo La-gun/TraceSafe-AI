@@ -88,10 +88,6 @@ export default function HeroSection() {
           Serialisation, GS1-style aggregation, scan intelligence, and enforcement
           workflows designed to improve measurable outcomes — partner adoption,
           alert-to-action traceability, and recall readiness — not just deeper dashboards.
-          <span className="text-gray-500 block mt-3 text-base sm:text-lg">
-            Deep regulatory fit where programmes like NAFDAC set the bar; the same stack
-            extends to multi-region rollouts when you need global reach with local proof.
-          </span>
         </motion.p>
 
         <OutcomeMetricsStrip />
@@ -111,8 +107,8 @@ export default function HeroSection() {
           <Link to="/Solutions">
             <Button
               variant="outline"
-              className="bg-emerald-500 hover:bg-emerald-600 text-white h-12 px-8 rounded-full text-base font-medium gap-2">
-            
+              className="border-white/10 text-white hover:bg-white/5 h-12 px-8 rounded-full text-base font-medium gap-2"
+            >
               Explore Solutions
             </Button>
           </Link>
